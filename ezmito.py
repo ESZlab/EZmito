@@ -3727,6 +3727,7 @@ def ez_dist_subcommand(args):
 			records = list(SeqIO.parse(fh, "fasta"))
 		if len(records) < 2:
 			raise ValueError("At least 2 sequences are required.")
+		is_duplicated(fasta_path)
 		names = [r.id for r in records]
 		seqs  = [str(r.seq).upper() for r in records]
 		n	 = len(records)
@@ -3937,7 +3938,7 @@ def ez_popstat_subcommand(args):
 	fasta_path   = args.input
 	popmap_path  = getattr(args, 'popmap', None)
 	groupmap_path= getattr(args, 'groupmap', None)
-	n_perms	  = getattr(args, 'n_perms', 999)
+	n_perms	  = getattr(args, 'n_perms', 9999)
 	outdir	   = args.outdir
 
 	os.makedirs(outdir, exist_ok=True)
@@ -3965,6 +3966,7 @@ def ez_popstat_subcommand(args):
 			records = list(SeqIO.parse(fh, "fasta"))
 		if len(records) < 2:
 			raise ValueError("At least 2 sequences are required.")
+		is_duplicated(fasta_path)
 		names_list = [r.id for r in records]
 		seqs  = [str(r.seq).upper() for r in records]
 		n	 = len(records)
@@ -4103,7 +4105,7 @@ def ez_pcoa_subcommand(args):
 	from matplotlib.backends.backend_pdf import PdfPages
 
 	fasta_path   = args.input
-	popmap_path  = getattr(args, 'popmap', None)
+	popmap_path  = args.popmap
 	dist_model   = getattr(args, 'dist_model', 'k2p').lower()
 	palette	  = getattr(args, 'palette', 'Set1')
 	n_components = int(getattr(args, 'n_components', 3))
@@ -4131,6 +4133,7 @@ def ez_pcoa_subcommand(args):
 			records = list(SeqIO.parse(fh, "fasta"))
 		if len(records) < 3:
 			raise ValueError("At least 3 sequences are required for PCoA.")
+		is_duplicated(fasta_path)
 		names_list = [r.id for r in records]
 		seqs  = [str(r.seq).upper() for r in records]
 		n	 = len(records)
@@ -4640,7 +4643,7 @@ def main():
 	parser_ez_popstat.add_argument("-o", "--outdir",	help="Output directory",					   default='outdir', type=str)
 	parser_ez_popstat.add_argument("--popmap",		  help="Tab-separated population map (sample_name<TAB>population)", type=str)
 	parser_ez_popstat.add_argument("--groupmap",		help="Tab-separated group map (population<TAB>group) — enables hierarchical AMOVA",	   type=str)
-	parser_ez_popstat.add_argument("--n_perms",		 help="Permutations for AMOVA p-values: 9999 (precise), 999 (fast), 0 (skip)  [default: 999]",			 default=999,	  type=int)
+	parser_ez_popstat.add_argument("--n_perms",		 help="Permutations for AMOVA p-values: 9999 (precise), 999 (fast), 0 (skip)  [default: 9999]",			 default=9999,	  type=int)
 	required_ez_popstat = parser_ez_popstat.add_argument_group('required named arguments')
 	required_ez_popstat.add_argument("-i", "--input",   required=True, help="Pre-aligned FASTA input file")
 	parser_ez_popstat.set_defaults(func=ez_popstat_subcommand)
@@ -4652,12 +4655,12 @@ def main():
 		formatter_class=_ToolHelpFormatter
 	)
 	parser_ez_pcoa.add_argument("-o", "--outdir",		help="Output directory",					   default='outdir', type=str)
-	parser_ez_pcoa.add_argument("--popmap",			  help="Tab-separated population map (sample_name<TAB>population)", type=str)
 	parser_ez_pcoa.add_argument("--dist_model",		  help="Distance model: p (p-distance) or k2p (Kimura 2-Parameter)  [default: k2p]",  default='k2p',  type=str)
 	parser_ez_pcoa.add_argument("-n", "--n_components",  help="Number of principal coordinates to compute  [default: 3]",		default=3,		type=int)
 	parser_ez_pcoa.add_argument("-p", "--palette",	   help="Matplotlib colour palette for population colours  [default: Set1]",			   default='Set1',   type=str)
 	required_ez_pcoa = parser_ez_pcoa.add_argument_group('required named arguments')
 	required_ez_pcoa.add_argument("-i", "--input",	   required=True, help="Pre-aligned FASTA input file")
+	required_ez_pcoa.add_argument("--popmap",   required=True, help="Tab-separated population map (sample_name<TAB>population)")
 	parser_ez_pcoa.set_defaults(func=ez_pcoa_subcommand)
 
 	# ── Patch subparsers: on error show only the tool's own help ────────────────
