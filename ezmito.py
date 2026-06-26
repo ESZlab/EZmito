@@ -12,6 +12,7 @@ import pandas as pd
 import shutil
 import subprocess
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from Bio import SeqIO, AlignIO
 from Bio.Seq import Seq
 from Bio.Nexus import Nexus
@@ -28,12 +29,12 @@ warnings.filterwarnings("ignore")
 #
 # Every subcommand calls:
 #   with tool_run(tool_name, args.outdir, params_dict) as log:
-#       log("my message")
-#       ... analysis code ...
+#	   log("my message")
+#	   ... analysis code ...
 #
 # On success  → outdir/log.txt  contains the full run log
 # On failure  → outdir/log.txt  contains the log up to the crash
-#              outdir/error_report.txt  contains a human-readable explanation
+#			  outdir/error_report.txt  contains a human-readable explanation
 #
 # All print() calls from helper functions (isStopCodon, etc.) are also
 # captured and written into both files automatically.
@@ -98,6 +99,212 @@ _KNOWN_ERRORS = [
 ]
 
 
+##### Citation block ######
+
+CITATIONS = {
+    "ezmito": {
+        "doi": "https://doi.org/10.1080/23802359.2021.1899865\n\n",
+        "text": "Cucini, C., Leo, C., Iannotti, N., Boschi, S., Brunetti, C., Pons, J., "
+                "Fanciulli, P.P., Frati, F., Carapelli, A., & Nardi, F. (2021). EZmito: a simple "
+                "and fast tool for multiple mitogenome analyses. Mitochondrial DNA Part B, 6(3), 1101-1109.",
+    },
+    "mafft": {
+        "doi": "https://doi.org/10.1093/molbev/mst010",
+        "text": "Katoh, K., & Standley, D. M. (2013). MAFFT multiple sequence alignment software "
+                "version 7: improvements in performance and usability. Molecular biology and "
+                "evolution, 30(4), 772-780.",
+    },
+    "gblocks": {
+        "doi": "https://doi.org/10.1093/oxfordjournals.molbev.a026334",
+        "text": "Castresana, J. (2000). Selection of conserved blocks from multiple alignments "
+                "for their use in phylogenetic analysis. Molecular biology and evolution, 17(4), 540-552.",
+    },
+    "trampo": {
+        "doi": "https://doi.org/10.1093/sysbio/syag027",
+        "text": "Cucini, C., Nardi, F., & Pons, J. (2026). Integrating Secondary Structure "
+                "Information Enhances Phylogenetic Signal in Mitochondrial Protein Coding Genes. "
+                "Systematic Biology, syag027.",
+    },
+    "tmhmm": {
+        "doi": None,
+        "text": "Krogh, A., Larsson, B., Von Heijne, G., & Sonnhammer, E. L. (2001). Predicting "
+                "transmembrane protein topology with a hidden Markov model: application to complete "
+                "genomes. Journal of molecular biology, 305(3), 567-580.",
+    },
+    "cai": {
+        "doi": "https://doi.org/10.21105/joss.00905",
+        "text": "Lee, B. D. (2018). Python implementation of codon adaptation index. Journal of "
+                "Open Source Software, 3(30), 905.",
+    },
+    "skew": {
+        "doi": "https://doi.org/10.1080/10635150590947843",
+        "text": "Hassanin, A., Leger, N. E. L. L. Y., & Deutsch, J. (2005). Evidence for multiple "
+                "reversals of asymmetric mutational constraints during the evolution of the "
+                "mitochondrial genome of Metazoa, and consequences for phylogenetic inferences. "
+                "Systematic biology, 54(2), 277-298.",
+    },
+    "biopython": {
+        "doi": "https://doi.org/10.1093/bioinformatics/btp163",
+        "text": "Cock, P. J., Antao, T., Chang, J. T., Chapman, B. A., Cox, C. J., Dalke, A., ... "
+                "& De Hoon, M. J. (2009). Biopython: freely available Python tools for computational "
+                "molecular biology and bioinformatics. Bioinformatics, 25(11), 1422.",
+    },
+    "matplotlib": {
+        "doi": "https://doi.org/10.1109/MCSE.2007.55",
+        "text": "Hunter, J. D. (2007). Matplotlib: A 2D graphics environment. Computing in "
+                "science & engineering, 9(3), 90-95.",
+    },
+    "plotly": {
+        "doi": None,
+        "text": "Plotly Technologies Inc. (2015). Collaborative data science. Plotly Technologies Inc.",
+    },
+    "blast": {
+        "doi": "https://doi.org/10.1186/1471-2105-10-421",
+        "text": "Camacho, C., Coulouris, G., Avagyan, V., Ma, N., Papadopoulos, J., Bealer, K., "
+                "& Madden, T. L. (2009). BLAST+: architecture and applications. BMC bioinformatics, 10(1), 421.",
+    },
+    "pybedtools": {
+        "doi": "https://doi.org/10.1093/bioinformatics/btr539",
+        "text": "Dale, R. K., Pedersen, B. S., & Quinlan, A. R. (2011). Pybedtools: a flexible "
+                "Python library for manipulating genomic datasets and annotations. "
+                "Bioinformatics, 27(24), 3423-3424.",
+    },
+    "amova": {
+        "doi": "https://doi.org/10.1093/genetics/131.2.479",
+        "text": "Excoffier, L., Smouse, P. E., & Quattro, J. M. (1992). Analysis of molecular "
+                "variance inferred from metric distances among DNA haplotypes: application to human "
+                "mitochondrial DNA restriction data. Genetics, 131(2), 479-491.",
+    },
+    "numpy": {
+        "doi": None,
+        "text": "Harris, C. R., Millman, K. J., Van Der Walt, S. J., Gommers, R., Virtanen, P., "
+                "Cournapeau, D., et al. (2020). Array programming with NumPy. Nature, 585(7825), 357-362.",
+    },
+    "k2p": {
+        "doi": "https://doi.org/10.1007/bf01731581",
+        "text": "Kimura, M. (1980). A simple method for estimating evolutionary rates of base "
+                "substitutions through comparative studies of nucleotide sequences. Journal of "
+                "molecular evolution, 16(2), 111-120.",
+    },
+    "pandas": {
+        "doi": "https://doi.org/10.25080/Majora-92bf1922-00a",
+        "text": "McKinney, W. (2010). Data structures for statistical computing in Python. 445(1), 51-56.",
+    },
+    "scikit-learn": {
+        "doi": None,
+        "text": "Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., "
+                "... & Duchesnay, É. (2011). Scikit-learn: Machine learning in Python. the Journal "
+                "of machine Learning research, 12, 2825-2830.",
+    },
+    "scipy": {
+        "doi": "https://doi.org/10.1038/s41592-019-0686-2",
+        "text": "Virtanen, P., Gommers, R., Oliphant, T. E., Haberland, M., Reddy, T., Cournapeau, D., "
+                "... & Van Mulbregt, P. (2020). SciPy 1.0: fundamental algorithms for scientific "
+                "computing in Python. Nature methods, 17(3), 261-272.",
+    },
+}
+ 
+ 
+# Citation keys always required, regardless of tool
+BASE = ["ezmito"]
+ 
+# Static per-tool requirements
+TOOL_CITATIONS = {
+    "ezcircular": ["pybedtools", "biopython"],
+    "ezcodon":    ["cai", "matplotlib", "biopython", "pandas"],
+    "ezdist":     ["numpy", "pandas", "matplotlib", "scipy"],
+    "ezmix":      ["blast", "matplotlib", "pandas"],
+    "ezpcoa":     ["k2p", "matplotlib", "pandas"],
+    "ezpipe":     ["mafft", "gblocks", "biopython"],
+    "ezpopstat":  ["amova", "numpy", "pandas"],
+    "ezskew":     ["skew", "matplotlib", "biopython", "pandas"],
+    "ezsplit":    ["pybedtools"],
+    "eztrampo":   ["trampo", "mafft", "biopython", "plotly"],
+    # tools with no extra citation just won't appear here
+}
+ 
+ 
+def get_citations_for_run(tool, args=None):
+    """
+    Returns an ordered, de-duplicated list of citation keys for a given run.
+ 
+    `args` is the parsed CLI/argparse Namespace (or equivalent object with
+    attributes), used to resolve conditional citations that depend on which
+    options were actually used, not just which tool was run.
+    """
+    keys = list(BASE)
+    keys += TOOL_CITATIONS.get(tool, [])
+ 
+    # ── conditional citations based on options used ─────────────────────
+    if args is not None:
+        if tool == "eztrampo":
+            # user supplied a custom TMHMM table -> also cite TMHMM
+            if getattr(args, "tables", None):
+                keys.append("tmhmm")
+            if getattr(args, "sequence", None):
+                # custom reference model implies the user ran their own
+                # TMHMM annotation upstream too
+                if "tmhmm" not in keys:
+                    keys.append("tmhmm")
+ 
+    # de-duplicate while preserving first-seen order
+    seen = set()
+    ordered = [k for k in keys if not (k in seen or seen.add(k))]
+    return ordered
+ 
+ 
+def format_citations(keys, fmt="text"):
+    """
+    Render a list of citation keys as text, HTML, or a list of raw dicts.
+    Unknown keys are silently skipped (logged elsewhere if desired).
+    """
+    entries = [CITATIONS[k] for k in keys if k in CITATIONS]
+ 
+    if fmt == "text":
+        lines = []
+        for e in entries:
+            line = f"- {e['text']}"
+            if e["doi"]:
+                line += f" {e['doi']}"
+            lines.append(line)
+        return "\n".join(lines)
+ 
+    if fmt == "html":
+        items = []
+        for e in entries:
+            item = e["text"]
+            if e["doi"]:
+                item += f' Doi: <a href="{e["doi"]}" target="_blank">{e["doi"]}</a>'
+            items.append(f"<li>{item}</li>")
+        return "\n".join(items)
+ 
+    if fmt == "raw":
+        return entries
+ 
+    raise ValueError(f"Unknown format: {fmt}")
+ 
+ 
+def write_citations_to_log(write_fn, tool, args=None, header="Citations"):
+    """
+    Append a formatted citation block to an open log file via the tool's
+    existing `write(msg)` helper. Designed to be called from the `finally`
+    block of each ez_* function, right after the runtime line.
+ 
+    Example (inside trampo.py's finally block):
+ 
+        from .citations import write_citations_to_log
+        write_citations_to_log(write, "eztrampo", args)
+    """
+    keys = get_citations_for_run(tool, args)
+    citation_text = format_citations(keys, fmt="text")
+ 
+    write_fn()
+    write_fn(f"{header}")
+    write_fn("-" * len(header))
+    write_fn("If you used this tool, please cite:")
+    write_fn()
+    write_fn(citation_text)
+
 def _translate_error(err_text):
 	"""Return a plain-English explanation, or a generic fallback."""
 	lower = err_text.lower()
@@ -105,7 +312,7 @@ def _translate_error(err_text):
 		if keyword.lower() in lower:
 			return explanation
 	return ("An unexpected error occurred. The technical details are shown below. "
-	        "If you cannot resolve it, please include this file when asking for help.")
+			"If you cannot resolve it, please include this file when asking for help.")
 
 
 def _write_error_report(outdir, tool_name, exc, log_path, captured_prints=""):
@@ -115,7 +322,7 @@ def _write_error_report(outdir, tool_name, exc, log_path, captured_prints=""):
 	plain_msg = _translate_error(err_text)
 
 	banner = pyfiglet.figlet_format("ERROR", font="big")
-	sep    = "=" * 70
+	sep	= "=" * 70
 	dash   = "-" * 70
 
 	lines = [
@@ -131,7 +338,7 @@ def _write_error_report(outdir, tool_name, exc, log_path, captured_prints=""):
 	]
 
 	important = [l for l in (captured_prints or "").splitlines()
-	             if any(t in l for t in ("CODE ERROR", "Warning:", "ERROR", "error"))]
+				 if any(t in l for t in ("CODE ERROR", "Warning:", "ERROR", "error"))]
 	if important:
 		lines += ["DETAILS FROM THE ANALYSIS", dash]
 		lines += [f"  {l.strip()}" for l in important]
@@ -150,7 +357,7 @@ def _write_error_report(outdir, tool_name, exc, log_path, captured_prints=""):
 		"TECHNICAL DETAILS  (for advanced users)",
 		dash,
 		f"Error type : {exc.__class__.__name__}",
-		f"Message    : {exc}",
+		f"Message	: {exc}",
 		"",
 		"Full traceback:",
 		tb_text,
@@ -162,29 +369,52 @@ def _write_error_report(outdir, tool_name, exc, log_path, captured_prints=""):
 	return report
 
 
+# Map the display names used by _ToolRun to the citation keys used in
+# citations.TOOL_CITATIONS (the same keys used by the Flask app).
+_TOOL_NAME_TO_CITATION_KEY = {
+	"EZcircular": "ezcircular",
+	"EZcodon":	"ezcodon",
+	"EZdist":	 "ezdist",
+	"EZmap":	  None,   # no extra citations beyond base
+	"EZmix":	  "ezmix",
+	"EZpcoa":	 "ezpcoa",
+	"EZpipe":	 "ezpipe",
+	"EZpopstat":  "ezpopstat",
+	"EZskew":	 "ezskew",
+	"EZsplit":	"ezsplit",
+	"EZtrampo":   "eztrampo",
+}
+
+
 class _ToolRun:
 	"""
 	Context manager that sets up log.txt + TeeWriter for a single tool run.
 
 	Usage:
-	    with _ToolRun("EZpca", outdir) as R:
-	        R.write("Starting analysis...")
-	        R.write(f"Input: {fasta}")
-	        ... analysis code ...
+		with _ToolRun("EZpcoa", outdir, args) as R:
+			R.write("Starting analysis...")
+			R.write(f"Input: {fasta}")
+			... analysis code ...
+
+	`args` (the parsed argparse.Namespace for this subcommand) is optional
+	but required for citations to be written to log.txt — pass it whenever
+	available so conditional citations (e.g. custom TMHMM tables) resolve
+	correctly.
 	"""
-	def __init__(self, tool_name, outdir):
+	def __init__(self, tool_name, outdir, args=None):
 		self.tool_name  = tool_name
-		self.outdir     = outdir
+		self.outdir	 = outdir
+		self.args	   = args
 		self.log_path   = os.path.join(outdir, "log.txt")
-		self._start     = None
-		self._log_fh    = None
+		self._start	 = None
+		self._log_fh	= None
 		self._print_buf = None
 		self._orig_out  = None
 
 	def __enter__(self):
 		os.makedirs(self.outdir, exist_ok=True)
-		self._start     = time.time()
-		self._log_fh    = open(self.log_path, "w")
+		self._start	 = time.time()
+		self._log_fh	= open(self.log_path, "w")
 		self._print_buf = io.StringIO()
 
 		orig = sys.stdout
@@ -199,11 +429,12 @@ class _ToolRun:
 				orig.flush()
 
 		self._orig_out = orig
-		sys.stdout     = _Tee()
+		sys.stdout	 = _Tee()
 		return self
 
 	def write(self, msg=""):
-		"""Write a line to log.txt (and flush immediately)."""
+		"""Write a line to log.txt and print it to screen."""
+		print(msg, flush=True)
 		self._log_fh.write(msg + "\n")
 		self._log_fh.flush()
 
@@ -229,6 +460,11 @@ class _ToolRun:
 		runtime = time.time() - self._start
 		self.write()
 		self.write(f"Total runtime: {runtime:.2f} seconds")
+
+		citation_key = _TOOL_NAME_TO_CITATION_KEY.get(self.tool_name)
+		if citation_key is not None:
+			write_citations_to_log(self.write, citation_key, self.args)
+
 		self._log_fh.close()
 		return False   # re-raise any exception
 
@@ -606,10 +842,10 @@ def gff_to_bed(gff_path, bed_path):
 					if '=' in token:
 						k, _, v = token.partition('=')
 						attrs[k.strip()] = v.strip()
-			label    = _best_label(attrs, feat_type)
+			label	= _best_label(attrs, feat_type)
 			priority = TYPE_PRIORITY.get(ft_lower, 1)
-			key      = (chrom, start, end, strand)
-			prev     = best.get(key)
+			key	  = (chrom, start, end, strand)
+			prev	 = best.get(key)
 			if prev is None:
 				best[key] = (priority, label, feat_type)
 			else:
@@ -635,7 +871,7 @@ def bed_to_gff(bed_path, gff_path, source='EZmito'):
 	"""Convert a 6-column BED file to a GFF3 file."""
 	cols = ['chrom','start','end','name','score','strand']
 	df   = pd.read_csv(bed_path, sep='\t', header=None, names=cols)
-	seqid          = df['chrom'].iloc[0]
+	seqid		  = df['chrom'].iloc[0]
 	seq_region_end = int(df['end'].max())
 	with open(gff_path, 'w') as fh:
 		fh.write('##gff-version 3\n')
@@ -643,8 +879,8 @@ def bed_to_gff(bed_path, gff_path, source='EZmito'):
 		for _, row in df.iterrows():
 			gff_start = int(row['start']) + 1
 			gff_end   = int(row['end'])
-			strand    = row['strand'] if str(row['strand']) in ('+', '-') else '.'
-			name      = str(row['name']).replace(';','_').replace('=','_')
+			strand	= row['strand'] if str(row['strand']) in ('+', '-') else '.'
+			name	  = str(row['name']).replace(';','_').replace('=','_')
 			fh.write(f"{row['chrom']}\t{source}\tgene\t{gff_start}\t{gff_end}\t.\t{strand}\t.\tName={name}\n")
 	return gff_path
 
@@ -669,6 +905,15 @@ def ensure_bed(annotation_path, workdir):
 	return bed_path, True
 
 
+def create_output_dir(outdir):
+	if os.path.exists(outdir):
+		raise FileExistsError(
+			f"\n\nOutput directory already exists: {outdir}\n"
+			"Please choose another output directory."
+		)
+	os.makedirs(outdir)
+
+
 def replace_dir(directory):
 	# If the directory exists, remove it
 	if os.path.exists(directory):
@@ -683,23 +928,23 @@ def ez_circular_subcommand(args):
 	import pybedtools
 	import re
 
-	annotation_path = args.bed      # accepts BED or GFF3
+	annotation_path = args.bed	  # accepts BED or GFF3
 	fasta_file  = args.input
 	output_fasta = os.path.join(args.outdir, 'output.fasta')
 	output_bed   = os.path.join(args.outdir, 'output.bed')
-	gene_name    = args.start
-	linear       = '' if args.feature == 'circular' else 'linear'
+	gene_name	= args.start
+	linear	   = '' if args.feature == 'circular' else 'linear'
 
 	os.makedirs(args.outdir, exist_ok=True)
-	with _ToolRun("EZcircular", args.outdir) as R:
-		banner = pyfiglet.figlet_format("EZcircular")
+	with _ToolRun("EZcircular", args.outdir, args) as R:
+		banner = pyfiglet.figlet_format("EZcircular\n\n")
 		R.write(banner.rstrip())
 		R.write("\n\nStarting EZcircular run")
 		R.write(f"Input FASTA  : {fasta_file}")
 		R.write(f"Annotation   : {annotation_path}")
-		R.write(f"Feature      : {'circular' if not linear else 'linear'}")
+		R.write(f"Feature	  : {'circular' if not linear else 'linear'}")
 		R.write(f"Starting gene: {gene_name}")
-		R.write(f"Outdir       : {args.outdir}")
+		R.write(f"Outdir	   : {args.outdir}")
 		R.write()
 		print(banner.rstrip())
 		print(f"Starting gene: {gene_name}  |  Outdir: {args.outdir}")
@@ -868,15 +1113,15 @@ def ez_codon_subcommand(args):
 			triplet=str(Seq(df_codon.iloc[i][1]).translate(table=geneticCode, to_stop=False)) #translate it to AA
 			df_codon.iloc[i,3]=triplet #Add this result to the new column o
 		
-		output_RSCU = os.path.join(folder,strand+'_RSCU.csv')
-		df_codon.to_csv(output_RSCU)
+		output_RSCU = os.path.join(folder,strand+'_RSCU.tsv')
+		df_codon.to_csv(output_RSCU, sep='\t', index=False)
 
 
 		#AAfreq
 		df_aa=df_aa.reset_index()
 		df_aa=df_aa[['Species','AA','Freq']]
-		output_AAfreq =  os.path.join(folder,strand+'_AAfreq.csv')
-		df_aa.to_csv(output_AAfreq)
+		output_AAfreq =  os.path.join(folder,strand+'_AAfreq.tsv')
+		df_aa.to_csv(output_AAfreq, sep='\t', index=False)
 		
 		return output_RSCU, output_AAfreq
 		
@@ -896,9 +1141,11 @@ def ez_codon_subcommand(args):
 					species_data = df[df['Species'] == species]
 					plt.plot(species_data['AA'], species_data['Freq'], marker='o', label=species)
 					
-				plt.title(f'{strand} strand Amino Acid Frequency', fontsize=15)
-				plt.xlabel('Amino Acids', fontsize=12)
-				plt.ylabel('Frequency', fontsize=12)
+				plt.title(f'{strand} strand Amino Acid Frequency', fontsize=30)
+				plt.xlabel('Amino Acids', fontsize=30)
+				plt.ylabel('Frequency', fontsize=30)
+				plt.xticks(fontsize=30)
+				plt.yticks(fontsize=30)
 				plt.legend(title="Species")
 				plt.tight_layout()
 				
@@ -970,8 +1217,11 @@ def ez_codon_subcommand(args):
 					ax1.set_xticklabels(unique_AA, position=(1,-.05))  # Assign amino acids (AA) as labels on the x-axis
 
 					# Add titles and labels
-					ax1.set_title(f"{name} {strand} strand RSCU")
-					ax1.set_ylabel('RSCU')
+					ax1.set_title(f"{name} {strand} strand RSCU", fontsize=20)
+					ax1.set_ylabel('RSCU', fontsize=20)
+
+					ax1.tick_params(axis='x', labelsize=20)
+					ax1.tick_params(axis='y', labelsize=20)
 
 					# Enable the grid on ax1
 					ax1.grid(True, which='both', axis='y', linestyle='-', linewidth=0.5, color='#cccccc')
@@ -1027,7 +1277,7 @@ def ez_codon_subcommand(args):
 	genetic_code = args.code
 	outdir = args.outdir
 	
-	replace_dir(outdir)
+	create_output_dir(outdir)
 	
 	tmp = os.path.join(outdir, 'tmp')
 	replace_dir(tmp)
@@ -1038,12 +1288,12 @@ def ez_codon_subcommand(args):
 	tables = os.path.join(outdir, 'tables')
 	replace_dir(tables)
 	
-	with _ToolRun("EZcodon", outdir) as R:
-		banner = pyfiglet.figlet_format("EZcodon")
+	with _ToolRun("EZcodon", outdir, args) as R:
+		banner = pyfiglet.figlet_format("EZcodon\n\n")
 		R.write(banner.rstrip())
 		R.write("\n\nStarting EZcodon run")
 		R.write(f"Genetic code : {genetic_code}")
-		R.write(f"Outdir       : {outdir}")
+		R.write(f"Outdir	   : {outdir}")
 		R.write()
 		print(banner.rstrip())
 
@@ -1125,7 +1375,7 @@ def ez_map_subcommand(args):
 	feature = args.feature
 	outdir  = args.outdir
 
-	replace_dir(outdir)
+	create_output_dir(outdir)
 	
 	
 	LABEL_QUALIFIERS = ["product", "Product", "name", "Name", "gene", "Gene"]
@@ -1173,12 +1423,12 @@ def ez_map_subcommand(args):
 					label = get_label(feat)
 					plt.arrow(start, 0, end - start, 0, head_width=0.4, head_length=(end - start) * 0.25, width=0.25, length_includes_head=True, fc=colorJ, ec='black', lw=1)
 					if len(label) > 10:
-						plt.text((start + end) / 2, .5, label, ha='center', va='baseline', fontsize=10, rotation=90)
+						plt.text((start + end) / 2, .5, label, ha='center', va='baseline', fontsize=10, rotation=90, fontstyle='italic')
 					else:
 						if cnt % 2 == 0:
-							plt.text((start + end) / 2, .5, label, ha='center', va='baseline', fontsize=10, rotation=90)
+							plt.text((start + end) / 2, .5, label, ha='center', va='baseline', fontsize=10, rotation=90, fontstyle='italic')
 						else:
-							plt.text((start + end) / 2, -2, label, ha='center', fontsize=10, rotation=90)
+							plt.text((start + end) / 2, -2, label, ha='center', fontsize=10, rotation=90, fontstyle='italic')
 						cnt += 1
 
 				for feat in r_cds_feats:
@@ -1186,12 +1436,12 @@ def ez_map_subcommand(args):
 					label = get_label(feat)
 					plt.arrow(start, 0, end - start, 0, head_width=0.4, head_length=(start - end) * 0.25, width=0.25, length_includes_head=True, fc=colorN, ec='black', lw=1)
 					if len(label) > 10:
-						plt.text((start + end) / 2, .5, label, ha='center', va='baseline', fontsize=10, rotation=90)
+						plt.text((start + end) / 2, .5, label, ha='center', va='baseline', fontsize=10, rotation=90, fontstyle='italic')
 					else:
 						if cnt % 2 == 0:
-							plt.text((start + end) / 2, .5, label, ha='center', va='baseline', fontsize=10, rotation=90)
+							plt.text((start + end) / 2, .5, label, ha='center', va='baseline', fontsize=10, rotation=90, fontstyle='italic')
 						else:
-							plt.text((start + end) / 2, -2, label, ha='center', fontsize=10, rotation=90)
+							plt.text((start + end) / 2, -2, label, ha='center', fontsize=10, rotation=90, fontstyle='italic')
 						cnt += 1
 
 				for feat in AT_feat:
@@ -1199,12 +1449,12 @@ def ez_map_subcommand(args):
 					label = 'A+T rich region / Control region'
 					plt.arrow(start, 0, end - start, 0, head_width=0.4, head_length=(end - start) * 0.25, width=0.25, length_includes_head=True, fc=colorJ, ec='black', lw=1)
 					if len(label) > 10:
-						plt.text((start + end) / 2, .5, label, ha='center', va='baseline', fontsize=10, rotation=90)
+						plt.text((start + end) / 2, .5, label, ha='center', va='baseline', fontsize=10, rotation=90, fontstyle='italic')
 					else:
 						if cnt % 2 == 0:
-							plt.text((start + end) / 2, .5, label, ha='center', va='baseline', fontsize=10, rotation=90)
+							plt.text((start + end) / 2, .5, label, ha='center', va='baseline', fontsize=10, rotation=90, fontstyle='italic')
 						else:
-							plt.text((start + end) / 2, -2, label, ha='center', fontsize=10, rotation=90)
+							plt.text((start + end) / 2, -2, label, ha='center', fontsize=10, rotation=90, fontstyle='italic')
 						cnt += 1
 
 				plt.gca().spines['top'].set_visible(False)
@@ -1213,7 +1463,7 @@ def ez_map_subcommand(args):
 				plt.gca().yaxis.set_visible(False)
 				plt.xticks(np.arange(0, gff.range_size + 1, 500), rotation=90)
 				plt.xlabel('Genomic position (bp)')
-				plt.savefig(os.path.join(outdir, 'mt_linear_output.pdf'), bbox_inches='tight')
+				plt.savefig(os.path.join(outdir, 'linear_plot.pdf'), bbox_inches='tight')
 				plt.close()
 
 	def plot_circular(gff_file, colorJ, colorN, outdir):
@@ -1258,6 +1508,7 @@ def ez_map_subcommand(args):
 			label_orientation="vertical",
 			show_bottom_line=True,
 			label_size=6,
+			text_kws={"fontstyle": "italic"},
 			line_kws=dict(ec="white"),
 		)
 		cds_track.xticks_by_interval(
@@ -1272,12 +1523,11 @@ def ez_map_subcommand(args):
 		fig = circos.plotfig()
 		fig.savefig(f'{outdir}/circular_plot.pdf', bbox_inches='tight')
 		plt.close(fig)
-		
-	with _ToolRun("EZmap", outdir) as R:
-		banner = pyfiglet.figlet_format("EZmap")
+
+	with _ToolRun("EZmap", outdir, args) as R:
+		banner = pyfiglet.figlet_format("EZmap\n\n")
 		R.write(banner.rstrip())
-		R.write("\n\nStarting EZmap run")
-		print(banner.rstrip())
+
 
 		# Detect & convert annotation format (GFF3 or BED both accepted)
 		detected_fmt = detect_annotation_format(annotation_path)
@@ -1288,10 +1538,10 @@ def ez_map_subcommand(args):
 			print(f"BED input detected — converted to GFF3 for plotting.")
 
 		R.write(f"Annotation   : {annotation_path}")
-		R.write(f"Feature      : {feature}")
+		R.write(f"Feature	  : {feature}")
 		R.write(f"Heavy color  : {colorJ}")
 		R.write(f"Light color  : {colorN}")
-		R.write(f"Outdir       : {outdir}")
+		R.write(f"Outdir	   : {outdir}")
 		R.write()
 
 		is_gff3(gff_file)
@@ -1303,19 +1553,84 @@ def ez_map_subcommand(args):
 
 		R.write("EZmap completed successfully.")
 
+
 def ez_mix_subcommand(args):
 	import matplotlib.cm as cm
-	
+
 	fasta_file = args.input
-	length = args.length
-	identity = args.identity*100
-	outdir = args.outdir
-	blastn = os.path.join(args.blastn, 'blastn')
-	
-	replace_dir(outdir)
-	
-	with _ToolRun("EZmix", outdir) as R:
-		banner = pyfiglet.figlet_format("EZmix")
+	length     = args.length
+	identity   = args.identity * 100
+	outdir     = args.outdir
+	blastn     = os.path.join(args.blastn, 'blastn')
+
+	create_output_dir(outdir)
+
+	# ── Helper functions (defined before _ToolRun so they are always in scope) ──
+
+	def run_blast(query, subject, outdir):
+		output_file = os.path.join(outdir, "blout")
+		command = (
+			f"{blastn} -task blastn -query {query} -subject {subject} "
+			f"-outfmt '6 qseqid qstart qend sseqid sstart send pident length evalue bitscore slen qlen' "
+			f"-evalue 0.5 > {output_file}"
+		)
+		subprocess.run(command, shell=True)
+		return output_file if os.path.exists(output_file) and os.path.getsize(output_file) > 0 else None
+
+	def parse_blast_output(blast_file, min_length, min_similarity):
+		columns = ['qseqid', 'qstart', 'qend', 'sseqid', 'sstart', 'send',
+		           'pc', 'length', 'evalue', 'bitscore', 'slen', 'qlen']
+		df = pd.read_csv(blast_file, sep="\t", header=None, names=columns)
+		filtered_df = df[(df['pc'] >= min_similarity) & (df['length'] >= min_length)]
+		hits_df = filtered_df[['qseqid', 'qstart', 'qend', 'sseqid', 'sstart', 'send', 'pc']]
+		return hits_df.to_dict(orient='records')
+
+	def create_plot(names, df, max_length, output_pdf, min_similarity, min_length, no_hits=False):
+		plt.figure(figsize=(10, 7))
+		plt.title('EZmix output (min length: ' + str(min_length) + 'bp ; min percent identity: ' + str(min_similarity) + '%)')
+		plt.xlabel('Assembly, bp')
+		plt.xlim(-100, max_length + 100)
+		plt.ylim(-1, len(names))
+
+		n = len(df.qseqid.unique())
+		cmap = cm.get_cmap('Accent')
+		colors = [cmap(i) for i in range(n)]
+		my_colors = {key: value for key, value in zip(df.qseqid.unique(), colors)}
+
+		legend_handles = []
+		for index, row in df.iterrows():
+			plt.plot([0, row['length']], [row['qseqid'], row['qseqid']], color='black')
+			if row['qstart'] != '':
+				plt.plot([row['qstart'], row['qend']], [row['qseqid'], row['qseqid']], color='black', lw=5)
+				plt.plot([row['sstart'], row['send']], [row['sseqid'], row['sseqid']], color='black', lw=5)
+				line, = plt.plot(
+					[(row['qstart'] + row['qend']) / 2, (row['sstart'] + row['send']) / 2],
+					[row['qseqid'], row['sseqid']], lw=2, color=my_colors[row['qseqid']])
+				legend_handles.append((row['qseqid'], line))
+
+		seen = {}
+		for label, handle in legend_handles:
+			if label not in seen:
+				seen[label] = handle
+		plt.legend(seen.values(), seen.keys(), title="Query sequences",
+		           bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
+
+		if no_hits:
+			plt.text(0.5, 0.5, 'No mix detected',
+			         transform=plt.gca().transAxes,
+			         ha='center', va='center',
+			         fontsize=22, color='#888888',
+			         fontstyle='italic', fontweight='bold',
+			         bbox=dict(boxstyle='round,pad=0.5', fc='white', ec='#cccccc', alpha=0.8))
+
+		plt.xticks(np.arange(0, max_length + 1, 500), rotation=75)
+		plt.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5, color='lightgray')
+		plt.savefig(output_pdf, bbox_inches='tight')
+		plt.close()
+
+	# ── Main analysis — all inside _ToolRun so R stays open throughout ──
+	with _ToolRun("EZmix", outdir, args) as R:
+		banner = pyfiglet.figlet_format("EZmix\n\n")
 		R.write(banner.rstrip())
 		R.write("\n\nStarting EZmix run")
 		R.write(f"Input FASTA  : {fasta_file}")
@@ -1324,111 +1639,48 @@ def ez_mix_subcommand(args):
 		R.write(f"BLASTn path  : {blastn}")
 		R.write(f"Outdir       : {outdir}")
 		R.write()
-		print(banner.rstrip())
-		print(f"Input: {fasta_file}  |  Identity: {identity}%  |  Min length: {length} bp")
-	
-	def run_blast(query, subject, outdir):
-			output_file = os.path.join(outdir, "blout")
-			command = f"{blastn} -task blastn -query {query} -subject {subject} -outfmt '6 qseqid qstart qend sseqid sstart send pident length evalue bitscore slen qlen' -evalue 0.5 > {output_file}"
-			subprocess.run(command, shell=True)
-			return output_file if os.path.exists(output_file) and os.path.getsize(output_file) > 0 else None
 
-	# Function to parse BLAST output
-	def parse_blast_output(blast_file, min_length, min_similarity):
-		# Define column names based on the BLAST output format
-		columns = ['qseqid', 'qstart', 'qend', 'sseqid', 'sstart', 'send', 'pc', 'length', 'evalue', 'bitscore', 'slen', 'qlen']
-		
-		# Read the BLAST output into a pandas DataFrame
-		df = pd.read_csv(blast_file, sep="\t", header=None, names=columns)
-		
-		# Filter rows based on minimum similarity (pc) and length
-		filtered_df = df[(df['pc'] >= min_similarity) & (df['length'] >= min_length)]
-		
-		# Select only the relevant columns (you can modify this based on what you need)
-		hits_df = filtered_df[['qseqid','qstart', 'qend', 'sseqid' , 'sstart', 'send', 'pc']]
-
-		# Convert the filtered DataFrame to a list of dictionaries
-		hits = hits_df.to_dict(orient='records')
-		
-		return hits
-		
-	# Function to create a PDF plot
-	def create_plot(names, df, max_length, output_pdf, min_similarity, min_length):
-		plt.figure(figsize=(10,7))
-		plt.title('EZmix output (min length: '+ str(min_length) +  'bp ; min percent identity: ' +  str(min_similarity) + '%)')
-		plt.xlabel('Assembly, bp')
-		plt.xlim(-100, max_length+100)
-		plt.ylim(-1, len(names))
-		
-		n = len(df.qseqid.unique())
-		cmap = cm.get_cmap('Accent')
-		colors = [cmap(i) for i in range(n)]
-		my_colors = {key:value for key, value in zip(df.qseqid.unique(), colors)}
-
-		legend_handles = []
-		for index, row in df.iterrows():
-			plt.plot([0,row['length']],  [row['qseqid'],row['qseqid']], color='black')
-			if row['qstart'] != '':
-				plt.plot([row['qstart'],row['qend']],  [row['qseqid'],row['qseqid']], color='black', lw=5)
-				plt.plot([row['sstart'],row['send']],  [row['sseqid'],row['sseqid']], color='black', lw=5)
-				line, = plt.plot([(row['qstart'] + row['qend']) / 2, (row['sstart'] + row['send']) / 2], 
-						 [row['qseqid'], row['sseqid']], lw=2, color=my_colors[row['qseqid']])
-				legend_handles.append((row['qseqid'], line))
-
-		# Deduplicate legend entries
-		seen = {}
-		for label, handle in legend_handles:
-			if label not in seen:
-				seen[label] = handle
-		plt.legend(seen.values(), seen.keys(), title="Query sequences", bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
-
-		plt.xticks(np.arange(0, max_length+1, 500), rotation=75)
-		plt.grid(True, which='both', axis='both', linestyle='--', linewidth=0.5, color='lightgray')
-		plt.savefig(output_pdf, bbox_inches='tight')
-		plt.close()			
-		
-
+		# Degap input sequences → degapped.fasta
 		processed_file = check_fasta(fasta_file, outdir)
-		checked_file = remove_gaps(processed_file)
+		_tmp_degapped  = remove_gaps(processed_file)
 		os.remove(processed_file)
+		checked_file   = os.path.join(outdir, "degapped.fasta")
+		shutil.move(_tmp_degapped, checked_file)
+		R.write("Degapped FASTA saved: degapped.fasta")
 
-		sequences = list(SeqIO.parse(checked_file, 'fasta'))
-		seq_names = [record.id for record in sequences]
+		sequences   = list(SeqIO.parse(checked_file, 'fasta'))
+		seq_names   = [record.id for record in sequences]
 		seq_lengths = [len(record.seq) for record in sequences]
-		lengths_df = pd.DataFrame({name:length for name, length in zip(seq_names, seq_lengths)}.items(), columns=['qseqid','length'])
+		lengths_df  = pd.DataFrame(
+			{name: length for name, length in zip(seq_names, seq_lengths)}.items(),
+			columns=['qseqid', 'length'])
 		lengths_df['qstart'] = ''
 		max_length = max(seq_lengths)
 
 		hits = []
 		for i in range(len(sequences) - 1):
 			for j in range(i + 1, len(sequences)):
-				query_file = os.path.join(outdir, f"primo_{i}.fasta")
+				query_file   = os.path.join(outdir, f"primo_{i}.fasta")
 				subject_file = os.path.join(outdir, f"secondo_{j}.fasta")
-
-				SeqIO.write(sequences[i], query_file, 'fasta')
+				SeqIO.write(sequences[i], query_file,   'fasta')
 				SeqIO.write(sequences[j], subject_file, 'fasta')
 
 				blast_output = run_blast(query_file, subject_file, outdir)
-				if blast_output is None:
-					continue
-				else:
+				if blast_output is not None:
 					hits += parse_blast_output(blast_output, length, identity)
 
 				os.remove(query_file)
 				os.remove(subject_file)
-				if os.path.exists(blast_output):
+				if blast_output and os.path.exists(blast_output):
 					os.remove(blast_output)
-				
-	#### Attenzione, non crea un df correttamente. ci sono sseqid che mancano nei qseqid. quindi aggiungili a mano se non li trovi (missing obj). poi c'è da capire come non far cadere il primo qseqid nello 0 dell'y axis 			
-				
-		hits_df = pd.DataFrame(hits)
-		hits_df = pd.concat([hits_df, lengths_df], ignore_index=True)
-		output_pdf = os.path.join(outdir, f"{os.path.basename(fasta_file)}_output.pdf")
-		create_plot(seq_names, hits_df, max_length, output_pdf, identity, length)
-		R.write(f"Plot saved: {output_pdf}")
+
+		hits_df  = pd.DataFrame(hits)
+		hits_df  = pd.concat([hits_df, lengths_df], ignore_index=True)
+		output_pdf = os.path.join(outdir, "plot.pdf")
+		no_hits  = len(hits) == 0
+		create_plot(seq_names, hits_df, max_length, output_pdf, identity, length, no_hits=no_hits)
+		R.write(f"Plot saved: plot.pdf")
 		R.write("EZmix completed successfully.")
-		print(f"Plot saved to {output_pdf}")
-	
 
 def ez_pipe_subcommand(args):
 
@@ -1556,13 +1808,13 @@ def ez_pipe_subcommand(args):
 		sequences = AlignIO.read(filename_aa, 'fasta')
 		
 		options = Options(
-				IS = (len(sequences)*0.5)+1,
-				FS = len(sequences)*0.85,
-				CP = 4,
-				BL1 = 10,
-				BL2 = 10,
-				GT = 0,
-				GC = '-'
+				IS = (len(sequences)*0.5)+1,  # Minimum Number Of Sequences For A Conserved Position
+				FS = len(sequences)*0.85,  # Minimum Number Of Sequences For A Flank Position
+				CP = 4,  # Maximum Number Of Contiguous Nonconserved Positions
+				BL1 = 10, # Minimum Length Of A Block, 1st iteration
+				BL2 = 10, # Minimum Length Of A Block, 2nd iteration
+				GT = 0,  # Maximum Number of Allowed Gaps For Any Position
+				GC = '-'  # Definition of Gap Characters
 			)
 			
 		mask = compute_mask(sequences, options, log=False)
@@ -1685,21 +1937,21 @@ def ez_pipe_subcommand(args):
 	outdir = args.outdir
 	positions = args.positions
 	
-	replace_dir(outdir)
+	create_output_dir(outdir)
 	
 	tmp = os.path.join(outdir, 'tmp')
 	replace_dir(tmp)
 	
 	genes = args.input
 	
-	with _ToolRun("EZpipe", outdir) as R:
-		banner = pyfiglet.figlet_format("EZpipe")
+	with _ToolRun("EZpipe", outdir, args) as R:
+		banner = pyfiglet.figlet_format("EZpipe\n\n")
 		R.write(banner.rstrip())
 		R.write("\n\nStarting EZpipe run")
 		R.write(f"Genes path   : {genes}")
 		R.write(f"Genetic code : {genetic_code}")
-		R.write(f"Positions    : {positions}")
-		R.write(f"Outdir       : {outdir}")
+		R.write(f"Positions	: {positions}")
+		R.write(f"Outdir	   : {outdir}")
 		R.write()
 		print(banner.rstrip())
 		print(f"Input: {genes}  |  Code: {genetic_code}  |  Positions: {positions}")
@@ -1867,7 +2119,7 @@ def ez_skew_subcommand(args):
 		for species in species_unique:
 			for strand in markers.keys():
 				subset = df[(df['Species'] == species) & (df[strand_col] == strand)]
-				ax.scatter(subset[x_col], subset[y_col], 
+				ax.scatter(subset[x_col], subset[y_col], s=150,
 						   label = species if strand == list(markers.keys())[0] else "", 
 						   marker=markers.get(strand), 
 						   facecolor=species_color_map[species],
@@ -1907,7 +2159,7 @@ def ez_skew_subcommand(args):
 	genetic_code = args.code
 	outdir = args.outdir
 	
-	replace_dir(outdir)
+	create_output_dir(outdir)
 	
 	tmp = os.path.join(outdir, 'tmp')
 	replace_dir(tmp)
@@ -1918,12 +2170,12 @@ def ez_skew_subcommand(args):
 	tables = os.path.join(outdir, 'tables')
 	replace_dir(tables)
 	
-	with _ToolRun("EZskew", outdir) as R:
-		banner = pyfiglet.figlet_format("EZskew")
+	with _ToolRun("EZskew", outdir, args) as R:
+		banner = pyfiglet.figlet_format("EZskew\n\n")
 		R.write(banner.rstrip())
 		R.write("\n\nStarting EZskew run")
 		R.write(f"Genetic code : {genetic_code}")
-		R.write(f"Outdir       : {outdir}")
+		R.write(f"Outdir	   : {outdir}")
 		R.write()
 		print(banner.rstrip())
 
@@ -2047,7 +2299,7 @@ def ez_skew_subcommand(args):
 		if len(df_final) > 30:
 			fig, ax = plt.subplots(figsize=(10, 6))
 
-			strand_colors = {'AT%': '#e41a1c', 'AC% (J/heavy strand)': '#377eb8', 'GT% (N/light strand)': '#4daf4a'}
+			strand_colors = {'AT%': '#d62728', 'AC% (J/heavy strand)': '#1f77b4', 'GT% (N/light strand)': '#ff7f0e'}
 
 			for s in df_final2['strand'].unique():
 				subset = df_final2[df_final2['strand'] == s]
@@ -2058,17 +2310,17 @@ def ez_skew_subcommand(args):
 			ax.set_ylabel('Frequency')
 			ax.legend(title='Bias percentages')
 
-			if args.light and args.heavy == 'JN':
+			if args.light and args.heavy:
 				ax.set_title("First and second bias frequencies: AT%, AC% and GT%")
-			elif args.light == 'N':
+			elif args.light and not args.heavy:
 				ax.set_title("First and second bias frequencies: AT% and GT%")
-			elif args.heavy == 'J':
+			elif args.heavy and not args.light:
 				ax.set_title("First and second bias frequencies: AT% and AC%")
 
 			output_file = os.path.join(plots, 'First_and_second_bias_frequency.pdf')
 			plt.savefig(output_file, dpi=500, bbox_inches='tight')
-		 
-		 
+			 
+			 
 		#plotting barplots	 
 		fig, ax = plt.subplots(figsize=(14, 8))
 
@@ -2080,8 +2332,9 @@ def ez_skew_subcommand(args):
 		# Set the width of each bar and create offsets
 		bar_width = 0.2
 		x = np.arange(len(species))
+		
+		strand_colors = {'AT%': '#d62728', 'AC% (J/heavy strand)': '#1f77b4', 'GT% (N/light strand)': '#ff7f0e'}
 
-		strand_colors = {'AT%': '#e41a1c', 'AC% (J/heavy strand)': '#377eb8', 'GT% (N/light strand)': '#4daf4a'}
 
 
 		# Plot bars for each strand with an offset to dodge them
@@ -2107,14 +2360,14 @@ def ez_skew_subcommand(args):
 
 		# Add legend
 		ax.legend(labels=strands)
-	
+
 		output_file = os.path.join(plots, 'First_and_second_bias.pdf')
 		plt.savefig(output_file, dpi=500, bbox_inches='tight')
 	
 		# Plotting the skews
 		if args.light and args.heavy:
-			J = df_final[['Species','FIRST_AT_SKEW_J', 'FIRST_CG_SKEW_J', 'SECOND_AT_SKEW_J', 'SECOND_CG_SKEW_J', 'THIRD_AT_SKEW_J', 'THIRD_CG_SKEW_J']]
-			N = df_final[['Species','FIRST_AT_SKEW_N', 'FIRST_CG_SKEW_N', 'SECOND_AT_SKEW_N', 'SECOND_CG_SKEW_N', 'THIRD_AT_SKEW_N', 'THIRD_CG_SKEW_N']]
+			J = df_final[['Species','FIRST_AT_SKEW_J', 'FIRST_CG_SKEW_J', 'SECOND_AT_SKEW_J', 'SECOND_CG_SKEW_J', 'THIRD_AT_SKEW_J', 'THIRD_CG_SKEW_J']].copy()
+			N = df_final[['Species','FIRST_AT_SKEW_N', 'FIRST_CG_SKEW_N', 'SECOND_AT_SKEW_N', 'SECOND_CG_SKEW_N', 'THIRD_AT_SKEW_N', 'THIRD_CG_SKEW_N']].copy()
 			J.columns = ['Species', 'FAT', 'FCG', 'SAT', 'SCG', 'TAT', 'TCG']
 			N.columns = ['Species', 'FAT', 'FCG', 'SAT', 'SCG', 'TAT', 'TCG']
 			J['strand'] = 'J'
@@ -2135,8 +2388,16 @@ def ez_skew_subcommand(args):
 		third = JN[['Species', 'TAT', 'TCG', 'strand']]
 
 		# Calculate max values for axis limits
-		max_first_AT = max(abs(first['FAT']).max(), abs(second['SAT']).max(), abs(third['TAT']).max())
-		max_first_CG = max(abs(first['FCG']).max(), abs(second['SCG']).max(), abs(third['TCG']).max())
+		max_first_AT = np.nanmax([
+			abs(first['FAT']).max(),
+			abs(second['SAT']).max(),
+			abs(third['TAT']).max()
+		])
+		max_first_CG = np.nanmax([
+			abs(first['FCG']).max(),
+			abs(second['SCG']).max(),
+			abs(third['TCG']).max()
+		])
 
 		# Unique species list for color assignment
 		n_colors = len(first['Species'].unique())
@@ -2154,7 +2415,7 @@ def ez_skew_subcommand(args):
 			}
 
 		fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(18, 6))
-		
+			
 		plot_codon_skew(first, 'FAT', 'FCG', 'strand', 'First codon position', axes[0], legend=False, species_color_map=species_color_map)
 		plot_codon_skew(second, 'SAT', 'SCG', 'strand', 'Second codon position', axes[1], legend=False, species_color_map=species_color_map)
 		if n_colors <= 20:
@@ -2162,14 +2423,15 @@ def ez_skew_subcommand(args):
 		else:
 			plot_codon_skew(third, 'TAT', 'TCG', 'strand', 'Third codon position', axes[2], False, species_color_map)
 
-			# Show plots
-			plt.tight_layout()
 
-			output_file = os.path.join(plots, 'Third_bias.pdf')
-			plt.savefig(output_file, dpi=500)
-			R.write(f"Third bias plot: {output_file}")
-			R.write("EZskew completed successfully.")
-			shutil.rmtree(tmp)
+
+		# Show plots
+		plt.tight_layout()
+
+		output_file = os.path.join(plots, 'Third_bias.pdf')
+		plt.savefig(output_file, dpi=500)
+				
+		shutil.rmtree(tmp)
 
 def ez_split_subcommand(args):
 	
@@ -2180,15 +2442,15 @@ def ez_split_subcommand(args):
 	gff_file = args.gff
 	outdir = args.outdir
 
-	replace_dir(outdir)
+	create_output_dir(outdir)
 	
-	with _ToolRun("EZsplit", outdir) as R:
-		banner = pyfiglet.figlet_format("EZsplit")
+	with _ToolRun("EZsplit", outdir, args) as R:
+		banner = pyfiglet.figlet_format("EZsplit\n\n")
 		R.write(banner.rstrip())
 		R.write("\n\nStarting EZsplit run")
 		R.write(f"Input FASTA  : {fasta_file}")
-		R.write(f"GFF file     : {gff_file}")
-		R.write(f"Outdir       : {outdir}")
+		R.write(f"GFF file	 : {gff_file}")
+		R.write(f"Outdir	   : {outdir}")
 		R.write()
 		print(banner.rstrip())
 		print(f"FASTA: {fasta_file}  |  GFF: {gff_file}")
@@ -2267,18 +2529,18 @@ def ez_trampo_subcommand(args):
 	outdir	   = args.outdir
 	threads	  = args.threads
 	
-	replace_dir(outdir)
+	create_output_dir(outdir)
 	
-	with _ToolRun("EZtrampo", outdir) as R:
-		banner = pyfiglet.figlet_format("EZtrampo")
+	with _ToolRun("EZtrampo", outdir, args) as R:
+		banner = pyfiglet.figlet_format("EZtrampo\n\n")
 		R.write(banner.rstrip())
 		R.write("\n\nStarting EZtrampo run")
-		R.write(f"FASTA dir    : {fasta_files}")
+		R.write(f"FASTA dir	: {fasta_files}")
 		R.write(f"Genetic code : {genetic_code}")
-		R.write(f"Model        : {model}")
+		R.write(f"Model		: {model}")
 		R.write(f"Gene order   : {gene_order}")
-		R.write(f"Threads      : {threads}")
-		R.write(f"Outdir       : {outdir}")
+		R.write(f"Threads	  : {threads}")
+		R.write(f"Outdir	   : {outdir}")
 		R.write()
 		print(banner.rstrip())
 		print(f"FASTA dir: {fasta_files}  |  Model: {model}  |  Code: {genetic_code}")
@@ -3372,10 +3634,10 @@ def ez_trampo_subcommand(args):
 		)
 
 		# ── output folders ──────────────────────────────────────────────────────
-		tmp            = os.path.join(outdir, 'tmp')
-		plots          = os.path.join(outdir, 'plots')
-		tables         = os.path.join(outdir, 'tables')
-		stats          = os.path.join(outdir, 'stats')
+		tmp			= os.path.join(outdir, 'tmp')
+		plots		  = os.path.join(outdir, 'plots')
+		tables		 = os.path.join(outdir, 'tables')
+		stats		  = os.path.join(outdir, 'stats')
 		partitions_dir = os.path.join(outdir, 'partitions')
 
 		for folder in [tmp, plots, tables, stats, partitions_dir]:
@@ -3400,10 +3662,10 @@ def ez_trampo_subcommand(args):
 			os.remove(degapped_file)
 			new_name = revise_user_sequences(clean_file, user)
 			os.remove(clean_file)
-			model       = new_name
+			model	   = new_name
 			thmm_tables = check_tables(thmm_tables, user)
 		else:
-			model       = os.path.join('templates/sequences/',              args.model + '.fas')
+			model	   = os.path.join('templates/sequences/',			  args.model + '.fas')
 			thmm_tables = os.path.join('templates/model_organism_tables/', args.model + '.tsv')
 
 		if model == 'cel':
@@ -3424,32 +3686,36 @@ def ez_trampo_subcommand(args):
 
 def ez_dist_subcommand(args):
 	from Bio import SeqIO
+	from Bio.SeqRecord import SeqRecord
+	from Bio.Seq import Seq as BioSeq
 	import numpy as np
+	import pandas as pd
 	import matplotlib
 	matplotlib.use('Agg')
 	import matplotlib.pyplot as plt
 	import matplotlib.colors as mcolors
 	from matplotlib.backends.backend_pdf import PdfPages
+	import csv as _csv
 
-	fasta_path    = args.input
-	model         = args.model.lower()
+	fasta_path	= args.input
+	model		 = args.model.lower()
 	gap_treatment = getattr(args, 'gap_treatment', 'pairwise')
 	show_values   = getattr(args, 'show_values', False)
-	palette_name  = getattr(args, 'palette', 'Blues')
-	outdir        = args.outdir
+	palette	   = getattr(args, 'palette', 'Blues')
+	outdir		= args.outdir
 
 	os.makedirs(outdir, exist_ok=True)
 
-	with _ToolRun("EZdist", outdir) as R:
-		banner = pyfiglet.figlet_format("EZdist")
+	with _ToolRun("EZdist", outdir, args) as R:
+		banner = pyfiglet.figlet_format("EZdist\n\n")
 		R.write(banner.rstrip())
 		R.write("\n\nStarting EZdist run")
-		R.write(f"FASTA        : {fasta_path}")
-		R.write(f"Model        : {model}")
-		R.write(f"Gap treat    : {gap_treatment}")
-		R.write(f"Palette      : {palette_name}")
+		R.write(f"FASTA		: {fasta_path}")
+		R.write(f"Model		: {model}")
+		R.write(f"Gap treat	: {gap_treatment}")
+		R.write(f"Palette	  : {palette}")
 		R.write(f"Show values  : {show_values}")
-		R.write(f"Outdir       : {outdir}")
+		R.write(f"Outdir	   : {outdir}")
 		R.write()
 		print(banner.rstrip())
 		print(f"FASTA: {fasta_path}  |  Model: {model}  |  Gap: {gap_treatment}")
@@ -3461,16 +3727,16 @@ def ez_dist_subcommand(args):
 			records = list(SeqIO.parse(fh, "fasta"))
 		if len(records) < 2:
 			raise ValueError("At least 2 sequences are required.")
-		names_list = [r.id for r in records]
+		names = [r.id for r in records]
 		seqs  = [str(r.seq).upper() for r in records]
-		n     = len(records)
+		n	 = len(records)
 		R.write(f"Sequences loaded: {n}")
 
 		seq_lengths = [len(s) for s in seqs]
 		if len(set(seq_lengths)) > 1:
 			raise ValueError(
-				f"Input does not appear to be an alignment: sequences have different lengths "
-				f"(min={min(seq_lengths)}, max={max(seq_lengths)}). Please provide a pre-aligned FASTA file."
+				f"Sequences have different lengths (min={min(seq_lengths)}, "
+				f"max={max(seq_lengths)}). Please provide a pre-aligned FASTA file."
 			)
 		R.write(f"Alignment check passed: all sequences are {seq_lengths[0]} bp")
 
@@ -3485,44 +3751,22 @@ def ez_dist_subcommand(args):
 			R.write("Pairwise deletion: gaps/ambiguities skipped per pair")
 
 		# ── 3. Distance models ────────────────────────────────────────────
+		# K2P and p-distance via scikit-bio (Kimura 1980; Becker et al., 2025)
+		# skbio returns proportions (0–1); canonical alphabet decorator performs
+		# pairwise deletion of gap/ambiguous characters automatically.
+		from skbio.sequence import DNA as SkDNA
+		from skbio.sequence.distance import k2p as skbio_k2p, pdist as skbio_pdist
+
 		def p_dist(s1, s2):
-			pairs = [(a, b) for a, b in zip(s1, s2) if a in VALID and b in VALID]
-			if not pairs: return float('nan')
-			return sum(a != b for a, b in pairs) / len(pairs)
+			d = skbio_pdist(SkDNA(s1), SkDNA(s2))
+			return float('nan') if np.isnan(d) else d
 
 		def k2p(s1, s2):
-			import math
-			pairs = [(a, b) for a, b in zip(s1, s2) if a in VALID and b in VALID]
-			if not pairs: return float('nan')
-			L = len(pairs)
-			PURINES = {'A', 'G'}; PYRIMIDINES = {'C', 'T'}
-			ts = sum(1 for a, b in pairs if a != b and
-			         ((a in PURINES and b in PURINES) or (a in PYRIMIDINES and b in PYRIMIDINES)))
-			tv = sum(1 for a, b in pairs if a != b and
-			         not ((a in PURINES and b in PURINES) or (a in PYRIMIDINES and b in PYRIMIDINES)))
-			P, Q = ts / L, tv / L
-			try:
-				return -0.5 * math.log((1 - 2*P - Q) * math.sqrt(1 - 2*Q))
-			except (ValueError, ZeroDivisionError):
-				return float('nan')
+			d = skbio_k2p(SkDNA(s1), SkDNA(s2))
+			return float('nan') if np.isnan(d) else d
 
-		def tn93(s1, s2):
-			import math
-			pairs = [(a, b) for a, b in zip(s1, s2) if a in VALID and b in VALID]
-			if not pairs: return float('nan')
-			L = len(pairs)
-			PURINES = {'A', 'G'}; PYRIMIDINES = {'C', 'T'}
-			ts_r = sum(1 for a, b in pairs if a != b and a in PURINES and b in PURINES)
-			ts_y = sum(1 for a, b in pairs if a != b and a in PYRIMIDINES and b in PYRIMIDINES)
-			tv   = sum(1 for a, b in pairs if a != b and
-			           not ((a in PURINES and b in PURINES) or (a in PYRIMIDINES and b in PYRIMIDINES)))
-			P1, P2, Q = ts_r/L, ts_y/L, tv/L
-			try:
-				return (-0.5*math.log(1-2*P1-Q) - 0.25*math.log(1-2*P2-Q) - 0.25*math.log(1-2*Q))
-			except (ValueError, ZeroDivisionError):
-				return float('nan')
-
-		dist_fn = {'p': p_dist, 'k2p': k2p, 'tn93': tn93}.get(model, p_dist)
+		dist_fn	= {'p': p_dist, 'k2p': k2p}.get(model, p_dist)
+		model_label = 'p-distance' if model == 'p' else model.upper()
 
 		# ── 4. Compute matrix ─────────────────────────────────────────────
 		R.write("Computing pairwise distances ...")
@@ -3531,43 +3775,150 @@ def ez_dist_subcommand(args):
 			for j in range(n):
 				if i != j:
 					mat[i, j] = dist_fn(seqs_dist[i], seqs_dist[j])
+		mat_pct = mat * 100
 		R.write("Distance matrix computed.")
 
-		# Save table
+		# Save distance table (TSV)
 		import pandas as pd
-		df_table = pd.DataFrame(mat, index=names_list, columns=names_list)
-		table_path = os.path.join(outdir, "distance_matrix.csv")
-		df_table.to_csv(table_path)
+		df_mat = pd.DataFrame(mat_pct, index=names, columns=names)
+		table_path = os.path.join(outdir, f"{model_label}_distance_matrix.tsv")
+		df_mat.to_csv(table_path, sep='\t', float_format='%.4f')
 		R.write(f"Distance table saved: {table_path}")
 
-		# ── 5. Heatmap ────────────────────────────────────────────────────
-		R.write("Generating heatmap ...")
-		try:
-			cmap = plt.get_cmap(palette_name)
-		except ValueError:
-			cmap = plt.get_cmap('Blues')
+		# ── 5. Collapse identical sequences into unique haplotypes ────────
+		seq_to_hap  = {}
+		hap_count   = {}
+		hap_members = {}
+		hap_order   = []
+		for nm, s in zip(names, seqs):
+			if s not in seq_to_hap:
+				seq_to_hap[s]   = nm
+				hap_count[nm]   = 1
+				hap_members[nm] = [nm]
+				hap_order.append(nm)
+			else:
+				rep = seq_to_hap[s]
+				hap_count[rep]   += 1
+				hap_members[rep].append(nm)
 
-		fig, ax = plt.subplots(figsize=(max(6, n*0.5), max(5, n*0.5)))
-		im = ax.imshow(mat, cmap=cmap, aspect='auto')
-		plt.colorbar(im, ax=ax, label=f"{model.upper()} distance")
-		ax.set_xticks(range(n)); ax.set_yticks(range(n))
-		ax.set_xticklabels(names_list, rotation=90, fontsize=8)
-		ax.set_yticklabels(names_list, fontsize=8)
-		ax.set_title(f"Pairwise distance heatmap ({model.upper()})")
+		all_hap_reps = hap_order
+		n_hap = len(all_hap_reps)
+		hap_id = {rep: f"Hap_{i+1}" for i, rep in enumerate(all_hap_reps)}
+		R.write(f"Unique haplotypes: {n_hap} (from {n} sequences)")
 
-		if show_values:
-			for i in range(n):
-				for j in range(n):
-					ax.text(j, i, f"{mat[i,j]:.3f}", ha='center', va='center', fontsize=5)
+		# Save collapsed FASTA
+		fasta_out = os.path.join(outdir, "collapsed_haplotypes.fasta")
+		with open(fasta_out, "w") as fh:
+			for rep in all_hap_reps:
+				rec = SeqRecord(
+					BioSeq(seqs[names.index(rep)]),
+					id=hap_id[rep],
+					description=f"n={hap_count[rep]} representative={rep}"
+				)
+				fh.write(rec.format("fasta"))
+		R.write("Collapsed FASTA saved: collapsed_haplotypes.fasta")
 
-		plt.tight_layout()
-		pdf_path = os.path.join(outdir, "distance_heatmap.pdf")
-		with PdfPages(pdf_path) as pdf:
-			pdf.savefig(fig, bbox_inches='tight')
-		plt.close(fig)
-		R.write(f"Heatmap PDF saved: {pdf_path}")
+		# Save haplotype assignment table
+		table_out = os.path.join(outdir, "haplotype_assignments.tsv")
+		with open(table_out, "w", newline="") as fh:
+			w = _csv.writer(fh, delimiter="\t")
+			w.writerow(["Sequence", "Haplotype", "Representative", "Count"])
+			for rep in all_hap_reps:
+				for member in hap_members[rep]:
+					w.writerow([member, hap_id[rep], rep, hap_count[rep]])
+		R.write("Haplotype assignments saved: haplotype_assignments.tsv")
+
+		# ── 6. Heatmaps ───────────────────────────────────────────────────
+		# Always produces TWO heatmaps:
+		#   (a) collapsed — unique haplotypes with Hap_N labels
+		#   (b) full	  — all sequences with original names
+		R.write("Generating heatmaps ...")
+
+		def _make_heatmap(plot_names, labels, suffix, title_note):
+			n_p  = len(plot_names)
+			df_p = df_mat.loc[plot_names, plot_names]
+
+			# Hierarchical clustering ordering
+			try:
+				from scipy.cluster.hierarchy import linkage, leaves_list
+				from scipy.spatial.distance import squareform
+				_D = df_p.values.astype(float); np.fill_diagonal(_D, 0.0)
+				_Z = linkage(squareform(_D), method='average')
+				order = [plot_names[i] for i in leaves_list(_Z)]
+			except Exception:
+				order = df_p.mean(axis=1).sort_values().index.tolist()
+
+			rank = {nm: i for i, nm in enumerate(order)}
+			tri  = np.full((n_p, n_p), np.nan)
+			for r in range(n_p):
+				for c in range(n_p):
+					if rank[order[r]] > rank[order[c]]:
+						tri[r, c] = df_p.loc[order[r], order[c]]
+
+			lmap  = dict(zip(plot_names, labels))
+			fig_w = max(10, n_p * 0.35)
+			fig_h = max(8,  n_p * 0.30)
+			fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+
+			vmin = float(np.nanmin(tri)) if not np.all(np.isnan(tri)) else 0
+			vmax = float(np.nanmax(tri)) if not np.all(np.isnan(tri)) else 1
+			norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+			try:
+				cmap_obj = plt.colormaps[palette]
+			except (KeyError, AttributeError):
+				cmap_obj = plt.get_cmap(palette)
+
+			ax.imshow(tri, origin='upper', aspect='auto',
+					  cmap=cmap_obj, norm=norm, interpolation='nearest')
+			ax.set_facecolor('white')
+
+			sm = plt.cm.ScalarMappable(cmap=cmap_obj, norm=norm)
+			sm.set_array([])
+			cb = fig.colorbar(sm, ax=ax, fraction=0.03, pad=0.02)
+			cb.set_label(f"Sequence distance ({model_label}, %)", fontsize=8)
+
+			ax.set_xticks(np.arange(-0.5, n_p, 1), minor=True)
+			ax.set_yticks(np.arange(-0.5, n_p, 1), minor=True)
+			ax.grid(which='minor', color='#dddddd', linewidth=0.4)
+			ax.tick_params(which='minor', bottom=False, left=False)
+
+			fs = max(12, min(18, 180 // n_p))
+			ax.set_xticks(range(n_p)); ax.set_yticks(range(n_p))
+			ax.set_xticklabels([lmap[nm] for nm in order], rotation=90, fontsize=fs)
+			ax.set_yticklabels([lmap[nm] for nm in order], fontsize=fs)
+
+			if show_values and n_p <= 80:
+				val_fs = max(3, min(6, 80 // n_p))
+				for r in range(n_p):
+					for c in range(n_p):
+						if not np.isnan(tri[r, c]):
+							tc = 'white' if norm(tri[r, c]) > 0.55 else 'black'
+							ax.text(c, r, f"{tri[r,c]:.1f}",
+									ha='center', va='center',
+									fontsize=val_fs, color=tc)
+
+			gap_label = "complete deletion" if gap_treatment == 'complete' else "pairwise deletion"
+			ax.set_title(
+				f"Pairwise {model_label} distances (%)  —  {gap_label}\n"
+				f"(n={n} sequences  |  {n_p} shown  —  {title_note})",
+				fontsize=10, pad=12,
+			)
+			plt.tight_layout()
+			pdf_path = os.path.join(outdir, f"{model_label}_heatmap_{suffix}.pdf")
+			with PdfPages(pdf_path) as pdf:
+				pdf.savefig(fig, bbox_inches='tight')
+			plt.close(fig)
+			R.write(f"Heatmap saved: {model_label}_heatmap_{suffix}.pdf")
+
+		collapsed_labels = [f"{hap_id[nm]} (n={hap_count[nm]})" for nm in all_hap_reps]
+		_make_heatmap(all_hap_reps, collapsed_labels,
+					  suffix="collapsed", title_note=f"{n_hap} unique haplotypes")
+		_make_heatmap(names, list(names),
+					  suffix="all_sequences", title_note="all sequences")
+
 		R.write("EZdist completed successfully.")
 		print(f"Outputs saved to {outdir}")
+
 
 
 # ── EZpopstat subcommand ──────────────────────────────────────────────────────
@@ -3586,20 +3937,20 @@ def ez_popstat_subcommand(args):
 	fasta_path   = args.input
 	popmap_path  = getattr(args, 'popmap', None)
 	groupmap_path= getattr(args, 'groupmap', None)
-	n_perms      = getattr(args, 'n_perms', 999)
-	outdir       = args.outdir
+	n_perms	  = getattr(args, 'n_perms', 999)
+	outdir	   = args.outdir
 
 	os.makedirs(outdir, exist_ok=True)
 
-	with _ToolRun("EZpopstat", outdir) as R:
-		banner = pyfiglet.figlet_format("EZpopstat")
+	with _ToolRun("EZpopstat", outdir, args) as R:
+		banner = pyfiglet.figlet_format("EZpopstat\n\n")
 		R.write(banner.rstrip())
 		R.write("\n\nStarting EZpopstat run")
-		R.write(f"FASTA        : {fasta_path}")
-		R.write(f"Pop map      : {popmap_path}")
-		R.write(f"Group map    : {groupmap_path}")
+		R.write(f"FASTA		: {fasta_path}")
+		R.write(f"Pop map	  : {popmap_path}")
+		R.write(f"Group map	: {groupmap_path}")
 		R.write(f"Permutations : {n_perms}")
-		R.write(f"Outdir       : {outdir}")
+		R.write(f"Outdir	   : {outdir}")
 		R.write()
 		print(banner.rstrip())
 		print(f"FASTA: {fasta_path}  |  Popmap: {popmap_path}")
@@ -3616,7 +3967,7 @@ def ez_popstat_subcommand(args):
 			raise ValueError("At least 2 sequences are required.")
 		names_list = [r.id for r in records]
 		seqs  = [str(r.seq).upper() for r in records]
-		n     = len(records)
+		n	 = len(records)
 		L_raw = len(seqs[0])
 		R.write(f"Sequences loaded: {n}  |  Raw alignment length: {L_raw} bp")
 
@@ -3636,7 +3987,7 @@ def ez_popstat_subcommand(args):
 		# ── 2. Segregating sites & basic diversity ────────────────────────
 		def seg_sites(seq_list):
 			return sum(1 for pos in range(len(seq_list[0]))
-			           if len({s[pos] for s in seq_list if s[pos] in VALID}) > 1)
+					   if len({s[pos] for s in seq_list if s[pos] in VALID}) > 1)
 
 		def pi_tajima(seq_list):
 			"""Tajima's nucleotide diversity π."""
@@ -3648,8 +3999,8 @@ def ez_popstat_subcommand(args):
 			for i in range(n_s):
 				for j in range(i+1, n_s):
 					diffs = sum(1 for k in range(L_s)
-					            if seq_list[i][k] in VALID and seq_list[j][k] in VALID
-					            and seq_list[i][k] != seq_list[j][k])
+								if seq_list[i][k] in VALID and seq_list[j][k] in VALID
+								and seq_list[i][k] != seq_list[j][k])
 					total += diffs
 					pairs += 1
 			return total / pairs / L_s if pairs and L_s else float('nan')
@@ -3699,16 +4050,16 @@ def ez_popstat_subcommand(args):
 			n_pop = len(pop_seqs)
 			if n_pop < 2:
 				rows.append({'Population': pop, 'N': n_pop, 'S': 'N/A', 'Pi': 'N/A',
-				             'Theta_W': 'N/A', "Tajima's_D": 'N/A'})
+							 'Theta_W': 'N/A', "Tajima's_D": 'N/A'})
 				continue
-			S     = seg_sites(pop_seqs)
-			pi    = pi_tajima(pop_seqs)
-			a1    = sum(1/i for i in range(1, n_pop))
+			S	 = seg_sites(pop_seqs)
+			pi	= pi_tajima(pop_seqs)
+			a1	= sum(1/i for i in range(1, n_pop))
 			theta = S / a1 / L if a1 and L else float('nan')
-			td    = tajima_d(pop_seqs)
+			td	= tajima_d(pop_seqs)
 			rows.append({'Population': pop, 'N': n_pop, 'S': S,
-			             'Pi': round(pi, 6), 'Theta_W': round(theta, 6),
-			             "Tajima's_D": round(td, 4) if not math.isnan(td) else 'N/A'})
+						 'Pi': round(pi, 6), 'Theta_W': round(theta, 6),
+						 "Tajima's_D": round(td, 4) if not math.isnan(td) else 'N/A'})
 
 		df_stats = pd.DataFrame(rows)
 		stats_path = os.path.join(outdir, "population_statistics.csv")
@@ -3737,9 +4088,9 @@ def ez_popstat_subcommand(args):
 		print(f"Outputs saved to {outdir}")
 
 
-# ── EZpca subcommand ──────────────────────────────────────────────────────────
+# ── EZpcoa subcommand ─────────────────────────────────────────────────────────
 
-def ez_pca_subcommand(args):
+def ez_pcoa_subcommand(args):
 	from Bio import SeqIO
 	import numpy as np
 	import pandas as pd
@@ -3750,45 +4101,39 @@ def ez_pca_subcommand(args):
 	import matplotlib.pyplot as plt
 	import matplotlib.patches as mpatches
 	from matplotlib.backends.backend_pdf import PdfPages
-	from sklearn.decomposition import PCA
 
 	fasta_path   = args.input
 	popmap_path  = getattr(args, 'popmap', None)
-	method       = getattr(args, 'method', 'pca').lower()
-	dist_model   = getattr(args, 'dist_model', 'p').lower()
-	palette      = getattr(args, 'palette', 'Set1')
+	dist_model   = getattr(args, 'dist_model', 'k2p').lower()
+	palette	  = getattr(args, 'palette', 'Set1')
 	n_components = int(getattr(args, 'n_components', 3))
-	outdir       = args.outdir
+	outdir	   = args.outdir
 
 	os.makedirs(outdir, exist_ok=True)
 
-	with _ToolRun("EZpca", outdir) as R:
-		banner = pyfiglet.figlet_format("EZpca")
+	with _ToolRun("EZpcoa", outdir, args) as R:
+		banner = pyfiglet.figlet_format("EZpcoa\n\n")
 		R.write(banner.rstrip())
-		R.write("\n\nStarting EZpca run")
-		R.write(f"FASTA        : {fasta_path}")
-		R.write(f"Pop map      : {popmap_path}")
-		R.write(f"Method       : {method.upper()}")
-		if method == 'pcoa':
-			R.write(f"Dist model   : {dist_model.upper()}")
+		R.write("\n\nStarting EZpcoa run")
+		R.write(f"FASTA		: {fasta_path}")
+		R.write(f"Pop map	  : {popmap_path}")
+		R.write(f"Method	   : PCoA")
+		R.write(f"Dist model   : {dist_model.upper()}")
 		R.write(f"Components   : {n_components}")
-		R.write(f"Palette      : {palette}")
-		R.write(f"Outdir       : {outdir}")
+		R.write(f"Palette	  : {palette}")
+		R.write(f"Outdir	   : {outdir}")
 		R.write()
-		print(banner.rstrip())
-		print(f"FASTA: {fasta_path}  |  Method: {method.upper()}  |  Popmap: {popmap_path}")
 
 		VALID = {'A', 'T', 'C', 'G'}
-		PURINES = {'A', 'G'}; PYRIMIDINES = {'C', 'T'}
 
 		# ── 1. Parse FASTA ────────────────────────────────────────────────
 		with open(fasta_path) as fh:
 			records = list(SeqIO.parse(fh, "fasta"))
 		if len(records) < 3:
-			raise ValueError("At least 3 sequences are required for PCA/PCoA.")
+			raise ValueError("At least 3 sequences are required for PCoA.")
 		names_list = [r.id for r in records]
 		seqs  = [str(r.seq).upper() for r in records]
-		n     = len(records)
+		n	 = len(records)
 		L_raw = len(seqs[0])
 		R.write(f"Sequences: {n}  |  Length: {L_raw} bp")
 		if len(set(len(s) for s in seqs)) > 1:
@@ -3824,101 +4169,182 @@ def ez_pca_subcommand(args):
 
 		colors = [pop_colors.get(pop_of.get(nm, 'All'), (0.3, 0.3, 0.3, 1.0)) for nm in names_list]
 
-		# ── 4a. SNP-PCA mode ──────────────────────────────────────────────
-		if method == 'pca':
-			seg = [pos for pos in range(pL) if len({s[pos] for s in cs if s[pos] in VALID}) > 1]
-			R.write(f"Segregating sites: {len(seg)}")
-			if len(seg) < 2:
-				raise ValueError("Fewer than 2 segregating sites — cannot run SNP-PCA.")
-			X = np.array([[1 if s[pos] != cs[0][pos] else 0 for pos in seg] for s in cs], dtype=float)
-			X -= X.mean(axis=0)
-			nc = min(n_components, n-1, len(seg))
-			pca = PCA(n_components=nc)
-			coords = pca.fit_transform(X)
-			var_exp = pca.explained_variance_ratio_ * 100
-			pc_labels = [f"PC{i+1} ({var_exp[i]:.1f}%)" for i in range(nc)]
-			R.write(f"Variance explained: {', '.join(f'PC{i+1}={v:.1f}%' for i, v in enumerate(var_exp))}")
+		# ── 4. PCoA — Distance matrix → double-centering → eigendecomposition ──
+		# K2P and p-distance via scikit-bio (Kimura 1980; Becker et al., 2025)
+		from skbio.sequence import DNA as SkDNA
+		from skbio.sequence.distance import k2p as skbio_k2p, pdist as skbio_pdist
 
-		# ── 4b. PCoA mode ─────────────────────────────────────────────────
-		else:
-			def p_dist(s1, s2):
-				pairs = [(a, b) for a, b in zip(s1, s2) if a in VALID and b in VALID]
-				return sum(a != b for a, b in pairs) / len(pairs) if pairs else float('nan')
+		dist_fn = skbio_k2p if dist_model == 'k2p' else skbio_pdist
+		D = np.zeros((n, n))
+		for _i in range(n):
+			for _j in range(_i + 1, n):
+				_d = dist_fn(SkDNA(cs[_i]), SkDNA(cs[_j]))
+				D[_i, _j] = D[_j, _i] = 0.0 if np.isnan(_d) else _d
+		R.write(f"Distance range: {D.max():.6f}  mean: {D[np.triu_indices(n, k=1)].mean():.6f}")
 
-			def k2p(s1, s2):
-				pairs = [(a, b) for a, b in zip(s1, s2) if a in VALID and b in VALID]
-				if not pairs: return float('nan')
-				L_p = len(pairs)
-				ts = sum(1 for a, b in pairs if a != b and
-				         ((a in PURINES and b in PURINES) or (a in PYRIMIDINES and b in PYRIMIDINES)))
-				tv = sum(1 for a, b in pairs if a != b and
-				         not ((a in PURINES and b in PURINES) or (a in PYRIMIDINES and b in PYRIMIDINES)))
-				P, Q = ts/L_p, tv/L_p
-				try:
-					return -0.5 * math.log((1-2*P-Q) * math.sqrt(1-2*Q))
-				except (ValueError, ZeroDivisionError):
-					return float('nan')
+		# Classical MDS (Gower 1966)
+		n_s = D.shape[0]
+		H = np.eye(n_s) - np.ones((n_s, n_s)) / n_s
+		B = -0.5 * H @ (D**2) @ H
+		eigvals, eigvecs = np.linalg.eigh(B)
+		idx = np.argsort(eigvals)[::-1]
+		eigvals, eigvecs = eigvals[idx], eigvecs[:, idx]
+		nc = min(n_components, n - 1)
+		coords = eigvecs[:, :nc] * np.sqrt(np.maximum(eigvals[:nc], 0))
+		total_pos = eigvals[eigvals > 0].sum()
+		var_exp = [max(eigvals[i], 0) / total_pos * 100 if total_pos > 0 else 0 for i in range(nc)]
+		pc_labels = [f"PCoA{i+1} ({var_exp[i]:.1f}%)" for i in range(nc)]
+		R.write(f"PCoA variance: {', '.join(f'PCoA{i+1}={v:.1f}%' for i, v in enumerate(var_exp))}")
 
-			dist_fn = k2p if dist_model == 'k2p' else p_dist
-			D = np.array([[dist_fn(cs[i], cs[j]) for j in range(n)] for i in range(n)])
-			D = np.nan_to_num(D)
-			# Classical MDS (Gower 1966)
-			n_s = D.shape[0]
-			H = np.eye(n_s) - np.ones((n_s, n_s)) / n_s
-			B = -0.5 * H @ (D**2) @ H
-			eigvals, eigvecs = np.linalg.eigh(B)
-			idx = np.argsort(eigvals)[::-1]
-			eigvals, eigvecs = eigvals[idx], eigvecs[:, idx]
-			nc = min(n_components, n-1)
-			coords = eigvecs[:, :nc] * np.sqrt(np.maximum(eigvals[:nc], 0))
-			total_pos = eigvals[eigvals > 0].sum()
-			var_exp = [max(eigvals[i], 0) / total_pos * 100 if total_pos > 0 else 0 for i in range(nc)]
-			pc_labels = [f"PCoA{i+1} ({var_exp[i]:.1f}%)" for i in range(nc)]
-			R.write(f"PCoA variance: {', '.join(f'PCoA{i+1}={v:.1f}%' for i, v in enumerate(var_exp))}")
-
-		# ── 5. Plots ──────────────────────────────────────────────────────
-		def _scatter(ax, x, y, xl, yl, colors_list, names_list, pop_colors, populations):
-			for i, (xi, yi) in enumerate(zip(x, y)):
-				ax.scatter(xi, yi, c=[colors_list[i]], s=60, edgecolors='black', linewidths=0.5, zorder=3)
-			ax.set_xlabel(xl); ax.set_ylabel(yl)
-			ax.axhline(0, color='gray', lw=0.5, ls='--')
-			ax.axvline(0, color='gray', lw=0.5, ls='--')
-			ax.grid(True, alpha=0.3)
-			if len(populations) > 1:
-				handles = [mpatches.Patch(color=pop_colors[p], label=p) for p in populations]
-				ax.legend(handles=handles, title='Population', fontsize=7, title_fontsize=8,
-				          bbox_to_anchor=(1.02, 1), loc='upper left')
-
+		# ── 5. Haplotype visualization ────────────────────────────────────
 		R.write("Generating plots ...")
-		tag = method.upper()
-		pdf_path = os.path.join(outdir, f"{tag}_plot.pdf")
-		with PdfPages(pdf_path) as pdf:
-			if nc >= 2:
-				fig, ax = plt.subplots(figsize=(7, 6))
-				_scatter(ax, coords[:, 0], coords[:, 1], pc_labels[0], pc_labels[1],
-				         colors, names_list, pop_colors, populations)
-				ax.set_title(f"{tag} — {pc_labels[0]} vs {pc_labels[1]}")
-				plt.tight_layout()
-				pdf.savefig(fig, bbox_inches='tight'); plt.close(fig)
-			if nc >= 3:
-				fig, ax = plt.subplots(figsize=(7, 6))
-				_scatter(ax, coords[:, 0], coords[:, 2], pc_labels[0], pc_labels[2],
-				         colors, names_list, pop_colors, populations)
-				ax.set_title(f"{tag} — {pc_labels[0]} vs {pc_labels[2]}")
-				plt.tight_layout()
-				pdf.savefig(fig, bbox_inches='tight'); plt.close(fig)
-		R.write(f"Plots saved: {pdf_path}")
+
+		# Collapse identical sequences into unique haplotypes.
+		# Each haplotype plotted as a pie at its mean PC coordinate.
+		# Pie slices = population proportions; radius ∝ √(frequency) so area ∝ frequency.
+		hap_map	  = {}   # cleaned_seq → hap_id
+		hap_pops	 = {}   # hap_id → Counter(pop→count)
+		hap_seq_idx  = {}   # hap_id → [row indices in coords]
+		for i, nm in enumerate(names_list):
+			s = cs[i]
+			if s not in hap_map:
+				hid = f"H{len(hap_map)+1}"
+				hap_map[s]	   = hid
+				hap_pops[hid]	= Counter()
+				hap_seq_idx[hid] = []
+			hid = hap_map[s]
+			hap_pops[hid][pop_of.get(nm, 'All')] += 1
+			hap_seq_idx[hid].append(i)
+
+		haps	  = list(hap_seq_idx.keys())
+		hap_coord = {hid: coords[hap_seq_idx[hid]].mean(axis=0) for hid in haps}
+		max_n	 = max(sum(hap_pops[h].values()) for h in haps)
+		R.write(f"Unique haplotypes: {len(haps)}")
+
+		legend_patches = [mpatches.Patch(color=pop_colors[p], label=p, alpha=0.9)
+		                   for p in populations]
+
+		def pie_ax(ax, xc, yc):
+			"""Draw pie-chart haplotypes on ax using PC axes xc and yc."""
+			x_vals = np.array([hap_coord[h][xc] for h in haps])
+			y_vals = np.array([hap_coord[h][yc] for h in haps])
+			x_rng  = x_vals.max() - x_vals.min()
+			y_rng  = y_vals.max() - y_vals.min()
+			r_base = min(x_rng, y_rng) * 0.010
+			r_max  = min(x_rng, y_rng) * 0.030
+
+			ax.axhline(0, color='#ccc', lw=0.7, zorder=1)
+			ax.axvline(0, color='#ccc', lw=0.7, zorder=1)
+
+			# Large pies drawn first so smaller ones sit on top
+			for hid in sorted(haps, key=lambda h: sum(hap_pops[h].values()), reverse=True):
+				x	 = hap_coord[hid][xc]
+				y	 = hap_coord[hid][yc]
+				total = sum(hap_pops[hid].values())
+				r	 = r_base + (r_max - r_base) * (total / max_n) ** 0.5
+				if len(hap_pops[hid]) == 1:
+					pop = list(hap_pops[hid].keys())[0]
+					ax.add_patch(plt.Circle(
+					    (x, y), r,
+					    facecolor=pop_colors.get(pop, '#ccc'),
+					    edgecolor='black', linewidth=0.6,
+					    zorder=5, alpha=0.9))
+				else:
+					start = 0.0
+					for pop, cnt in sorted(hap_pops[hid].items()):
+						angle = 360.0 * cnt / total
+						ax.add_patch(mpatches.Wedge(
+						    (x, y), r, start, start + angle,
+						    facecolor=pop_colors.get(pop, '#ccc'),
+						    edgecolor='black', linewidth=0.6,
+						    zorder=5, alpha=0.9))
+						start += angle
+
+			# Size legend
+			size_vals = sorted({1, max(2, max_n // 2), max_n})
+			gap	   = r_max * 3.5
+			leg_x	 = x_vals.max() + gap
+			y_mid	 = (y_vals.max() + y_vals.min()) / 2
+			y_step	= (r_max + r_base) * 3.5
+			leg_ys	= [y_mid + (i - (len(size_vals)-1)/2) * y_step
+			              for i in range(len(size_vals))][::-1]
+			frame_x0  = leg_x - r_max * 2.2
+			frame_x1  = leg_x + r_max * 2.2
+			frame_y0  = leg_ys[-1] - r_max * 2.2
+			frame_y1  = leg_ys[0]  + r_max * 3.8
+			ax.add_patch(mpatches.FancyBboxPatch(
+			    (frame_x0, frame_y0), frame_x1 - frame_x0, frame_y1 - frame_y0,
+			    boxstyle='round,pad=0', facecolor='none', edgecolor='#cccccc',
+			    linewidth=0.8, zorder=4))
+			ax.text((frame_x0+frame_x1)/2, frame_y1 - r_max*0.9,
+			        'n', ha='center', va='center',
+			        fontsize=7.5, color='#333', fontstyle='italic',
+			        fontweight='bold', zorder=6)
+			for nv, ly in zip(size_vals, leg_ys):
+				r = r_base + (r_max - r_base) * (nv / max_n) ** 0.5
+				ax.add_patch(plt.Circle(
+				    (leg_x, ly), r,
+				    facecolor='#aaaaaa', edgecolor='black',
+				    linewidth=0.6, zorder=5, alpha=0.85))
+				ax.text(leg_x, ly - r - r_base * 0.8, str(nv),
+				        ha='center', va='top', fontsize=7, color='#333', zorder=6)
+
+			pad = r_max * 1.5
+			ax.set_xlim(x_vals.min() - pad, frame_x1 + r_max * 1.5)
+			ax.set_ylim(y_vals.min() - pad, y_vals.max() + pad)
+			ax.set_aspect('equal')
+			ax.set_xlabel(pc_labels[xc], fontsize=10)
+			ax.set_ylabel(pc_labels[yc], fontsize=10)
+			ax.spines[['top', 'right']].set_visible(False)
+
+		tag = 'PCOA'
+
+		# PDF 1: PC1 × PC2
+		fig, ax = plt.subplots(figsize=(9, 7))
+		pie_ax(ax, 0, 1)
+		ax.legend(handles=legend_patches, title='Population',
+		          fontsize=8, title_fontsize=8, framealpha=0.9,
+		          edgecolor='#ccc', loc='best')
+		plt.tight_layout()
+		with PdfPages(os.path.join(outdir, f"{tag}_PC1_PC2.pdf")) as pdf:
+			pdf.savefig(fig, bbox_inches='tight')
+		plt.close(fig)
+		R.write(f"Saved: {tag}_PC1_PC2.pdf")
+
+		# PDF 2: all PC-pair grid
+		if nc >= 3:
+			pairs  = [(i, j) for i in range(nc) for j in range(i+1, nc)]
+			n_pairs = len(pairs)
+			ncols   = min(3, n_pairs)
+			nrows   = (n_pairs + ncols - 1) // ncols
+			fig, axes = plt.subplots(nrows, ncols,
+			                         figsize=(6*ncols, 5.5*nrows), squeeze=False)
+			for idx, (xc, yc) in enumerate(pairs):
+				pie_ax(axes[idx // ncols][idx % ncols], xc, yc)
+			for idx in range(n_pairs, nrows*ncols):
+				axes[idx // ncols][idx % ncols].set_visible(False)
+			axes[(n_pairs-1)//ncols][(n_pairs-1)%ncols].legend(
+			    handles=legend_patches, title='Population',
+			    fontsize=7, title_fontsize=7, loc='best')
+			plt.tight_layout()
+			with PdfPages(os.path.join(outdir, f"{tag}_all_pairs.pdf")) as pdf:
+				pdf.savefig(fig, bbox_inches='tight')
+			plt.close(fig)
+			R.write(f"Saved: {tag}_all_pairs.pdf")
+		else:
+			R.write(f"Only 2 PCs — skipping {tag}_all_pairs.pdf")
+
+		R.write(f"Plots saved to {outdir}")
 
 		# ── 6. Coordinates table ──────────────────────────────────────────
 		df_coords = pd.DataFrame(coords, index=names_list,
-		                         columns=[f"{tag}{i+1}" for i in range(nc)])
+								 columns=[f"{tag}{i+1}" for i in range(nc)])
 		if pop_of:
 			df_coords.insert(0, 'Population', [pop_of.get(nm, 'NA') for nm in names_list])
 		csv_path = os.path.join(outdir, f"{tag}_coordinates.csv")
 		df_coords.to_csv(csv_path)
 		R.write(f"Coordinates table saved: {csv_path}")
-		R.write("EZpca completed successfully.")
-		print(f"Outputs saved to {outdir}")
+		R.write("EZpcoa completed successfully.")
 
 
 # ── Custom help formatter ─────────────────────────────────────────────────────
@@ -3932,26 +4358,26 @@ class _EZmitoHelpFormatter(argparse.HelpFormatter):
 		super().__init__(prog, max_help_position=32, width=90)
 
 	def format_help(self):
-		banner = pyfiglet.figlet_format("EZmito 2")
+		banner = pyfiglet.figlet_format("EZmito 2\n")
 		sep = "─" * 88
 		tools = (
 			"\n" + sep + "\n"
 			"  TOOLS\n"
-			"    ezcircular   Rearrange a mitogenome to start from a different gene\n"
-			"    ezcodon      Codon usage (RSCU) and amino acid frequency per strand\n"
-			"    ezdist       Pairwise distance matrix and heatmap (p, K2P, TN93)\n"
-			"    ezmap        Circular or linear mitogenome map from GFF3 or BED\n"
-			"    ezmix        Detect chimeric assemblies via all-vs-all BLASTn\n"
-			"    ezpca        PCA / PCoA ordination, optionally coloured by population\n"
-			"    ezpipe       QC → alignment → Gblocks → concatenation → PartitionFinder\n"
-			"    ezpopstat    Population stats: pi, S, Tajima\'s D, Fst, AMOVA\n"
-			"    ezskew       Nucleotide skew (AT%, AC%, GT%) per codon position\n"
-			"    ezsplit      Extract individual PCGs from a multi-genome FASTA + GFF3\n"
-			"    eztrampo     Partition mitogenomes by transmembrane domain (IM, TM, MA)\n"
+			"  ezcircular	Rearrange a mitogenome to start from a different gene\n"
+			"  ezcodon	Codon usage (RSCU) and amino acid frequency per strand\n"
+			"  ezdist	Pairwise distance matrix and heatmap (p, K2P)\n"
+			"  ezmap		Circular or linear mitogenome map from GFF3 or BED\n"
+			"  ezmix		Detect chimeric assemblies via all-vs-all BLASTn\n"
+			"  ezpcoa	PCoA ordination, optionally coloured by population\n"
+			"  ezpipe	QC → alignment → Gblocks → concatenation → PartitionFinder\n"
+			"  ezpopstat	Population stats: pi, S, Tajima\'s D, Fst, AMOVA\n"
+			"  ezskew	Nucleotide skew (AT%, AC%, GT%) per codon position\n"
+			"  ezsplit	Extract individual PCGs from a multi-genome FASTA + GFF3\n"
+			"  eztrampo	Partition mitogenomes by transmembrane domain (IM, TM, MA)\n"
 			+ sep + "\n"
 			"  USAGE\n"
-			"    python ezmito.py <tool> --help      show tool-specific help\n"
-			"    python ezmito.py <tool> [options]   run the analysis\n"
+			"  python ezmito.py <tool> --help	show tool-specific help\n"
+			"  python ezmito.py <tool> [options]	run the analysis\n"
 			+ sep + "\n"
 		)
 		# We skip super().format_help() for the main parser to avoid repeating
@@ -3967,54 +4393,54 @@ class _ToolHelpFormatter(argparse.HelpFormatter):
 	"""
 	_TOOL_BANNERS = {
 		'ezcircular': 'EZcircular',
-		'ezcodon':    'EZcodon',
-		'ezdist':     'EZdist',
-		'ezmap':      'EZmap',
-		'ezmix':      'EZmix',
-		'ezpca':      'EZpca',
-		'ezpipe':     'EZpipe',
+		'ezcodon':	'EZcodon',
+		'ezdist':	 'EZdist',
+		'ezmap':	  'EZmap',
+		'ezmix':	  'EZmix',
+		'ezpcoa':	  'EZpcoa',
+		'ezpipe':	 'EZpipe',
 		'ezpopstat':  'EZpopstat',
-		'ezskew':     'EZskew',
-		'ezsplit':    'EZsplit',
+		'ezskew':	 'EZskew',
+		'ezsplit':	'EZsplit',
 		'eztrampo':   'EZtrampo',
 	}
 	_TOOL_DESC = {
 		'ezcircular': 'Rearrange a mitogenome to start from a different gene. Accepts BED or GFF3 annotation (auto-detected).',
-		'ezcodon':    'Codon usage (RSCU) and amino acid frequency analysis per strand.',
-		'ezdist':     'Pairwise genetic distance matrix and heatmap from an aligned FASTA.',
-		'ezmap':      'Circular or linear mitogenome map from a GFF3 or BED annotation.',
-		'ezmix':      'Detect possible chimeric assemblies via all-vs-all BLASTn.',
-		'ezpca':      'PCA or PCoA ordination plot, optionally coloured by population.',
-		'ezpipe':     'Full phylo-prep pipeline: QC → alignment → Gblocks → PartitionFinder.',
+		'ezcodon':	'Codon usage (RSCU) and amino acid frequency analysis per strand.',
+		'ezdist':	 'Pairwise genetic distance matrix and heatmap from an aligned FASTA (p-distance or K2P).',
+		'ezmap':	  'Circular or linear mitogenome map from a GFF3 or BED annotation.',
+		'ezmix':	  'Detect possible chimeric assemblies via all-vs-all BLASTn.',
+		'ezpcoa':	  'PCoA ordination plot, optionally coloured by population.',
+		'ezpipe':	 'Full phylo-prep pipeline: QC → alignment → Gblocks → PartitionFinder.',
 		'ezpopstat':  'Population statistics: pi, S, Tajima\'s D, Fst, AMOVA.',
-		'ezskew':     'Nucleotide skew analysis (AT%, AC%, GT%) per codon position.',
-		'ezsplit':    'Extract individual PCGs from a multi-genome FASTA + GFF3.',
+		'ezskew':	 'Nucleotide skew analysis (AT%, AC%, GT%) per codon position.',
+		'ezsplit':	'Extract individual PCGs from a multi-genome FASTA + GFF3.',
 		'eztrampo':   'Partition mitogenomes by transmembrane domain (IM, TM, MA).',
 	}
 	_TOOL_EXAMPLE = {
 		'ezcircular': 'python ezmito.py ezcircular -i genome.fasta -b annotation.gff3 -s cox1 -o outdir/  # BED or GFF3',
-		'ezcodon':    'python ezmito.py ezcodon -J heavy_genes/ -N light_genes/ -c 2 -o outdir/',
-		'ezdist':     'python ezmito.py ezdist -i alignment.fasta -m k2p -p Blues -o outdir/',
-		'ezmap':      'python ezmito.py ezmap -g annotation.gff3 -f circular -colJ "#add8e6" -o outdir/',
-		'ezmix':      'python ezmito.py ezmix -i assemblies.fasta -id 0.97 -len 300 -o outdir/',
-		'ezpca':      'python ezmito.py ezpca -i alignment.fasta --popmap popmap.txt --method pca -o outdir/',
-		'ezpipe':     'python ezmito.py ezpipe -i genes/ -c 2 -p 3 -o outdir/',
+		'ezcodon':	'python ezmito.py ezcodon -J heavy_genes/ -N light_genes/ -c 2 -o outdir/',
+		'ezdist':	 'python ezmito.py ezdist -i alignment.fasta -m k2p -p Blues -o outdir/',
+		'ezmap':	  'python ezmito.py ezmap -g annotation.gff3 -f circular -colJ "#add8e6" -o outdir/',
+		'ezmix':	  'python ezmito.py ezmix -i assemblies.fasta -id 0.97 -len 300 -o outdir/',
+		'ezpcoa':	  'python ezmito.py ezpcoa -i alignment.fasta --popmap popmap.txt --dist_model k2p -o outdir/',
+		'ezpipe':	 'python ezmito.py ezpipe -i genes/ -c 2 -p 3 -o outdir/',
 		'ezpopstat':  'python ezmito.py ezpopstat -i alignment.fasta --popmap popmap.txt -o outdir/',
-		'ezskew':     'python ezmito.py ezskew -J heavy_genes/ -N light_genes/ -c 2 -o outdir/',
-		'ezsplit':    'python ezmito.py ezsplit -i genomes.fasta -g annotation.gff3 -o outdir/',
+		'ezskew':	 'python ezmito.py ezskew -J heavy_genes/ -N light_genes/ -c 2 -o outdir/',
+		'ezsplit':	'python ezmito.py ezsplit -i genomes.fasta -g annotation.gff3 -o outdir/',
 		'eztrampo':   'python ezmito.py eztrampo -p genes/ -c 2 -m hsa -g vert -n 4 -o outdir/',
 	}
 	_OUTPUTS = {
 		'ezcircular': 'output.fasta, output.bed',
-		'ezcodon':    'plots/  (RSCU PDFs, AA frequency PDFs),  tables/  (RSCU CSV, AAfreq CSV)',
-		'ezdist':     'distance_matrix.csv,  distance_heatmap.pdf',
-		'ezmap':      'circular_plot.pdf  or  mt_linear_output.pdf',
-		'ezmix':      '<input>_output.pdf',
-		'ezpca':      'PCA_plot.pdf (or PCOA_plot.pdf),  PCA_coordinates.csv',
-		'ezpipe':     'infile.phy,  partition_finder.cfg',
+		'ezcodon':	'plots/  (RSCU PDFs, AA frequency PDFs),  tables/  (RSCU CSV, AAfreq CSV)',
+		'ezdist':	 '<model>_distance_matrix.tsv, <model>_heatmap_collapsed.pdf, <model>_heatmap_all_sequences.pdf, collapsed_haplotypes.fasta, haplotype_assignments.tsv',
+		'ezmap':	  'circular_plot.pdf  or  linear_plot.pdf',
+		'ezmix':	  '<input>_output.pdf',
+		'ezpcoa':	  'PCOA_PC1_PC2.pdf, PCOA_all_pairs.pdf, PCOA_coordinates.csv',
+		'ezpipe':	 'infile.phy,  partition_finder.cfg',
 		'ezpopstat':  'population_statistics.csv,  pi_per_population.pdf',
-		'ezskew':     'tables/Final_table.csv,  plots/First_and_second_bias.pdf,  plots/Third_bias.pdf',
-		'ezsplit':    '<gene>.fasta  (one per PCG),  missing_genes.txt',
+		'ezskew':	 'tables/Final_table.csv,  plots/First_and_second_bias.pdf,  plots/Third_bias.pdf',
+		'ezsplit':	'<gene>.fasta  (one per PCG),  missing_genes.txt',
 		'eztrampo':   'plots/,  tables/,  stats/,  partitions/',
 	}
 
@@ -4038,7 +4464,7 @@ class _ToolHelpFormatter(argparse.HelpFormatter):
 			+ f"  {desc}\n\n"
 			+ "─" * 88 + "\n"
 			+ "  OUTPUTS\n"
-			+ f"    {outputs}\n"
+			+ f"	{outputs}\n"
 			+ "  All tools also write: log.txt  and (on failure) error_report.txt\n"
 			+ "─" * 88 + "\n\n"
 		)
@@ -4047,7 +4473,7 @@ class _ToolHelpFormatter(argparse.HelpFormatter):
 		footer = (
 			"\n" + "─" * 88 + "\n"
 			+ "  EXAMPLE\n"
-			+ f"    {example}\n"
+			+ f"	{example}\n"
 			+ "─" * 88 + "\n"
 		)
 		return header + body + footer
@@ -4115,8 +4541,8 @@ def main():
 	)
 	parser_ez_mix.add_argument("-o", "--outdir", help="Output directory", default='outdir', type=str)
 	parser_ez_mix.add_argument("-bn", "--blastn", help="Path to directory containing the BLASTn executable  [default: system PATH]", default='', type=str)
-	parser_ez_mix.add_argument("-id", "--identity", help="Minimum identity threshold 0.5–1  [default: 0.95]", default=0.95, type=float)
-	parser_ez_mix.add_argument("-len", "--length", help="Minimum hit length in bp  [default: 200]", default=200, type=int)
+	parser_ez_mix.add_argument("-id", "--identity", help="Minimum identity threshold 0.5–1  [default: 0.90]", default=0.90, type=float)
+	parser_ez_mix.add_argument("-len", "--length", help="Minimum hit length in bp  [default: 500]", default=500, type=int)
 	required_ez_mix = parser_ez_mix.add_argument_group('required named arguments')
 	required_ez_mix.add_argument("-i", "--input", required=True, help="Multi-FASTA input file (complete sequences to check for chimerism)")
 	parser_ez_mix.set_defaults(func=ez_mix_subcommand)
@@ -4193,16 +4619,16 @@ def main():
 	# EZdist subcommand
 	parser_ez_dist = subparsers.add_parser(
 		'ezdist',
-		help='Pairwise distance matrix and heatmap (p, K2P, TN93)  [-i -m -g -p -o]',
+		help='Pairwise distance matrix and heatmap (p, K2P)  [-i -m -g -p -o]',
 		formatter_class=_ToolHelpFormatter
 	)
-	parser_ez_dist.add_argument("-o", "--outdir",       help="Output directory",                       default='outdir', type=str)
-	parser_ez_dist.add_argument("-m", "--model",        help="Distance model: p (p-distance), k2p (Kimura 2P), tn93  [default: p]",           default='p',      type=str)
-	parser_ez_dist.add_argument("-g", "--gap_treatment",help="Gap treatment: pairwise (skip per pair) or complete (remove columns)  [default: pairwise]",    default='pairwise',type=str)
-	parser_ez_dist.add_argument("-p", "--palette",      help="Matplotlib colour palette for the heatmap  [default: Blues]",  default='Blues',  type=str)
-	parser_ez_dist.add_argument("--show_values",        help="Annotate heatmap cells with numeric distance values",     action='store_true')
+	parser_ez_dist.add_argument("-o", "--outdir",	   help="Output directory",					   default='outdir', type=str)
+	parser_ez_dist.add_argument("-m", "--model",		help="Distance model: p (p-distance), k2p (Kimura 2-Parameter)  [default: p]",		   default='p',	  type=str)
+	parser_ez_dist.add_argument("-g", "--gap_treatment",help="Gap treatment: pairwise (skip per pair) or complete (remove columns)  [default: pairwise]",	default='pairwise',type=str)
+	parser_ez_dist.add_argument("-p", "--palette",	  help="Matplotlib colour palette for the heatmap  [default: Blues]",  default='Blues',  type=str)
+	parser_ez_dist.add_argument("--show_values",		help="Annotate heatmap cells with numeric distance values",	 action='store_true')
 	required_ez_dist = parser_ez_dist.add_argument_group('required named arguments')
-	required_ez_dist.add_argument("-i", "--input",      required=True, help="Pre-aligned FASTA input file")
+	required_ez_dist.add_argument("-i", "--input",	  required=True, help="Pre-aligned FASTA input file")
 	parser_ez_dist.set_defaults(func=ez_dist_subcommand)
 
 	# EZpopstat subcommand
@@ -4211,34 +4637,33 @@ def main():
 		help='Population stats: pi, S, Tajima\'s D, Fst, AMOVA  [-i --popmap --groupmap -o]',
 		formatter_class=_ToolHelpFormatter
 	)
-	parser_ez_popstat.add_argument("-o", "--outdir",    help="Output directory",                       default='outdir', type=str)
-	parser_ez_popstat.add_argument("--popmap",          help="Tab-separated population map (sample_name<TAB>population)", type=str)
-	parser_ez_popstat.add_argument("--groupmap",        help="Tab-separated group map (population<TAB>group) — enables hierarchical AMOVA",       type=str)
-	parser_ez_popstat.add_argument("--n_perms",         help="Permutations for AMOVA p-values: 9999 (precise), 999 (fast), 0 (skip)  [default: 999]",             default=999,      type=int)
+	parser_ez_popstat.add_argument("-o", "--outdir",	help="Output directory",					   default='outdir', type=str)
+	parser_ez_popstat.add_argument("--popmap",		  help="Tab-separated population map (sample_name<TAB>population)", type=str)
+	parser_ez_popstat.add_argument("--groupmap",		help="Tab-separated group map (population<TAB>group) — enables hierarchical AMOVA",	   type=str)
+	parser_ez_popstat.add_argument("--n_perms",		 help="Permutations for AMOVA p-values: 9999 (precise), 999 (fast), 0 (skip)  [default: 999]",			 default=999,	  type=int)
 	required_ez_popstat = parser_ez_popstat.add_argument_group('required named arguments')
 	required_ez_popstat.add_argument("-i", "--input",   required=True, help="Pre-aligned FASTA input file")
 	parser_ez_popstat.set_defaults(func=ez_popstat_subcommand)
 
-	# EZpca subcommand
-	parser_ez_pca = subparsers.add_parser(
-		'ezpca',
-		help='PCA / PCoA ordination, coloured by population  [-i --popmap --method -n -p -o]',
+	# EZpcoa subcommand
+	parser_ez_pcoa = subparsers.add_parser(
+		'ezpcoa',
+		help='PCoA ordination, coloured by population  [-i --popmap --dist_model -n -p -o]',
 		formatter_class=_ToolHelpFormatter
 	)
-	parser_ez_pca.add_argument("-o", "--outdir",        help="Output directory",                       default='outdir', type=str)
-	parser_ez_pca.add_argument("--popmap",              help="Tab-separated population map (sample_name<TAB>population)", type=str)
-	parser_ez_pca.add_argument("--method",              help="Ordination method: pca (SNP matrix) or pcoa (distance-based)  [default: pca]",         default='pca',    type=str)
-	parser_ez_pca.add_argument("--dist_model",          help="Distance model for PCoA: p or k2p  [default: p]",      default='p',      type=str)
-	parser_ez_pca.add_argument("-n", "--n_components",  help="Number of principal components to compute  [default: 3]",        default=3,        type=int)
-	parser_ez_pca.add_argument("-p", "--palette",       help="Matplotlib colour palette for population colours  [default: Set1]",               default='Set1',   type=str)
-	required_ez_pca = parser_ez_pca.add_argument_group('required named arguments')
-	required_ez_pca.add_argument("-i", "--input",       required=True, help="Pre-aligned FASTA input file")
-	parser_ez_pca.set_defaults(func=ez_pca_subcommand)
+	parser_ez_pcoa.add_argument("-o", "--outdir",		help="Output directory",					   default='outdir', type=str)
+	parser_ez_pcoa.add_argument("--popmap",			  help="Tab-separated population map (sample_name<TAB>population)", type=str)
+	parser_ez_pcoa.add_argument("--dist_model",		  help="Distance model: p (p-distance) or k2p (Kimura 2-Parameter)  [default: k2p]",  default='k2p',  type=str)
+	parser_ez_pcoa.add_argument("-n", "--n_components",  help="Number of principal coordinates to compute  [default: 3]",		default=3,		type=int)
+	parser_ez_pcoa.add_argument("-p", "--palette",	   help="Matplotlib colour palette for population colours  [default: Set1]",			   default='Set1',   type=str)
+	required_ez_pcoa = parser_ez_pcoa.add_argument_group('required named arguments')
+	required_ez_pcoa.add_argument("-i", "--input",	   required=True, help="Pre-aligned FASTA input file")
+	parser_ez_pcoa.set_defaults(func=ez_pcoa_subcommand)
 
 	# ── Patch subparsers: on error show only the tool's own help ────────────────
 	for _sp in [
 		parser_ez_circular, parser_ez_codon, parser_ez_dist,
-		parser_ez_map, parser_ez_mix, parser_ez_pca,
+		parser_ez_map, parser_ez_mix, parser_ez_pcoa,
 		parser_ez_pipe, parser_ez_popstat, parser_ez_skew,
 		parser_ez_split, parser_ez_trampo,
 	]:
@@ -4261,8 +4686,8 @@ if __name__ == "__main__":
 	main()
 	end_time = time.time()
 	runtime = round(end_time - start_time, 2)
-	print(f"\n\n-------------------The process was correctly completed in {runtime} seconds-------------------")
-	print("Thank you for using this code. If it helped you, please cite:")
-	print("Cucini C., Leo C., Iannotti N., Boschi S., Brunetti C., Pons J., Fanciulli P. P., Frati F., Carapelli A., & Nardi F. (2021)")
-	print("EZmito: a simple and fast tool for multiple mitogenome analyses, Mitochondrial DNA Part B, 6(3), 1101-1109.")
-	print("Doi: 10.1080/23802359.2021.1899865")
+#	print(f"\n\n-------------------The process was correctly completed in {runtime} seconds-------------------")
+#	print("Thank you for using this code. If it helped you, please cite:")
+#	print("Cucini C., Leo C., Iannotti N., Boschi S., Brunetti C., Pons J., Fanciulli P. P., Frati F., Carapelli A., & Nardi F. (2021)")
+#	print("EZmito: a simple and fast tool for multiple mitogenome analyses, Mitochondrial DNA Part B, 6(3), 1101-1109.")
+#	print("Doi: 10.1080/23802359.2021.1899865")
