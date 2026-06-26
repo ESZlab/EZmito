@@ -64,11 +64,11 @@ Detect potential chimeras in mitochondrial assemblies.
 - Adjustable identity and length thresholds
 - Visual representation of homologous regions
 
-### 📐 EZpca
-PCA or PCoA ordination from a pre-aligned FASTA.
-- SNP-matrix PCA or distance-based PCoA
-- Optional population colouring via population map
-- Scatter plots PDF + coordinates CSV output
+### 📐 EZpcoa
+PCoA ordination from a pre-aligned FASTA.
+- Distance-based PCoA
+- Population colouring via population map
+- Scatter pie-plots PDF + coordinates CSV output
 
 ### 🧬 EZpipe
 Prepare mitochondrial sequences for phylogenetic analysis.
