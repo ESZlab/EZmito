@@ -1128,7 +1128,7 @@ def ez_codon_subcommand(args):
 	def AA_freq_plot(table, strand, outdir):
 	# Load data
 		if os.path.exists(table):
-			df = pd.read_csv(table).drop(columns=['Unnamed: 0'])
+			df = pd.read_csv(table,sep='\t')
 			nsp = df['Species'].nunique()
 
 			# For amino acid frequency plot
@@ -1173,7 +1173,7 @@ def ez_codon_subcommand(args):
 				
 	def RSCU_plot(table, strand, outdir):
 		if os.path.exists(table):
-			codon = pd.read_csv(table).drop(columns=['Unnamed: 0'])
+			codon = pd.read_csv(table,sep='\t')
 			species_groups = codon.groupby('Species')
 
 			output_fig = os.path.join(outdir, f'{strand}_strand_RSCU.pdf')
