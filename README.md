@@ -142,7 +142,7 @@ git clone https://github.com/ESZlab/EZmito2.git
 cd EZmito2
 
 # Run the installer
-bash install.sh
+bash installer.sh
 ```
 
 The installer will:
