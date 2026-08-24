@@ -505,10 +505,10 @@ Open `error_report.txt` in the output directory first. It is written for non-tec
 
 If EZmito2 helps your research, while waiting for the new manuscript please cite:
 
-> **Cucini C., Leo C., Iannotti N., Boschi S., Brunetti C., Pons J., Fanciulli P. P., Frati F., Carapelli A., & Nardi F. (2021)**
-> *EZmito: a simple and fast tool for multiple mitogenome analyses*
-> Mitochondrial DNA Part B, 6(3), 1101–1109.
-> DOI: [10.1080/23802359.2021.1899865](https://doi.org/10.1080/23802359.2021.1899865)
+> **Cucini, C., Pons, J., Funari, R., Carapelli, A., Frati, F., & Nardi, F. (2026)**
+> *EZmito2: a tool suite for mitochondrial genome dataset preparation, population genetics, and visualization*
+> Molecular Biology and Evolution, msag210.
+> DOI: [https://doi.org/10.1093/molbev/msag210](https://doi.org/10.1093/molbev/msag210)
 
 ---
 
