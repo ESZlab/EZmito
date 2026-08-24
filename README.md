@@ -520,7 +520,7 @@ This project is licensed under the GNU General Public License v3.0 — see the `
 
 ## 👥 Authors
 
-Cucini C., Leo C., Iannotti N., Boschi S., Brunetti C., Pons J., Fanciulli P. P., Frati F., Carapelli A., & Nardi F.
+Cucini, C., Pons, J., Funari, R., Carapelli, A., Frati, F., & Nardi, F.
 
 ---
 
