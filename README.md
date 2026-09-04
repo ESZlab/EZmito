@@ -507,7 +507,7 @@ If EZmito2 helps your research, while waiting for the new manuscript please cite
 
 > **Cucini, C., Pons, J., Funari, R., Carapelli, A., Frati, F., & Nardi, F. (2026)**
 > *EZmito2: a tool suite for mitochondrial genome dataset preparation, population genetics, and visualization*
-> Molecular Biology and Evolution, msag210.
+> Molecular Biology and Evolution, 43(8), msag210.
 > DOI: [https://doi.org/10.1093/molbev/msag210](https://doi.org/10.1093/molbev/msag210)
 
 ---
